@@ -16,17 +16,27 @@ public class SistemaLogin {
             switch (opcion) {
                 case 1:
                     loginEmpleado();
+                    return;
                 case 2:
                     loginCliente();
+                    return;
             }
         }
         public void loginEmpleado(){
-            System.out.println("Ingrese su nombre: ");
-            String nombre = scanner.next();
+            System.out.println("Ingrese su legajo: ");
+            String legajo = scanner.next();
+            System.out.println("Ingrese su password: ");
+            String password = scanner.next();
+            //todo: conectarme con el gestor de archivos para poder verificar si el login fue ejecutado correctamente
+
         }
+
         public void loginCliente(){
-            System.out.println("Ingrese su apellido: ");
-            String apellido = scanner.next();
+            System.out.println("Ingrese su Identificacion: ");
+            String id = scanner.next();
+            System.out.println("Ingrese la cantidad de personas que se hospedaran: ");
+            Number cantidad = scanner.nextInt();
+            //todo: metodo para recuperar habitaciones y mostrarle al cliente cuales se encuentran vacias
         }
 
 }
