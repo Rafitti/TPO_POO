@@ -34,8 +34,9 @@ public class SistemaLogin {
         public void loginCliente(){
             System.out.println("Ingrese su Identificacion: ");
             String id = scanner.next();
-            System.out.println("Ingrese la cantidad de personas que se hospedaran: ");
-            Number cantidad = scanner.nextInt();
+            System.out.println("Ingrese su nombre: ");
+            String nombre = scanner.next();
+            Cliente cliente = new Cliente(id, nombre);
             //todo: metodo para recuperar habitaciones y mostrarle al cliente cuales se encuentran vacias
         }
 
