@@ -37,7 +37,7 @@ public class SistemaLogin {
             System.out.println("Ingrese su nombre: ");
             String nombre = scanner.next();
             Cliente cliente = new Cliente(id, nombre);
-            //todo: metodo para recuperar habitaciones y mostrarle al cliente cuales se encuentran vacias
+            //todo: metodo para conectarme con el gestor de archivos
         }
 
 }
