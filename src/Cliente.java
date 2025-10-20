@@ -1,17 +1,19 @@
 public class Cliente extends Usuario {
-    private String dni;
+    private int dni;
+    private String password;
 
-    public Cliente(String nombre, String dni) {
-        super(nombre);
+    public Cliente(int id, String nombre, String apellido, int dni, String password) {
+        super(id, nombre, apellido);
         this.dni = dni;
+        this.password = password;
     }
 
-    public String getDni() {
+    public int getDni() {
         return dni;
     }
 
     @Override
     public void mostrarInfo() {
-        System.out.println("Cliente: " + nombre + " | DNI: " + dni);
+        System.out.println("Cliente: " + getNombre() + " " + getApellido() + " | DNI: " + dni);
     }
 }
