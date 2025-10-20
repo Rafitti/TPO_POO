@@ -1,4 +1,6 @@
 public enum Rol {
     ADMINISTRADOR,
-    EMPLEADO
+    RECEPCIONISTA,
+    MUCAMA,
+    COCINERO
 }
