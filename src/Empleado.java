@@ -2,14 +2,10 @@ public class Empleado extends Usuario {
     private String password;
     private Rol rol;
 
-    public Empleado(String nombre, String password, Rol rol) {
-        super(nombre);
+    public Empleado(int id, String nombre, String apellido, String password, Rol rol) {
+        super(id, nombre, apellido);
         this.password = password;
         this.rol = rol;
-    }
-
-    public String getPassword() {
-        return password;
     }
 
     public Rol getRol() {
@@ -18,6 +14,6 @@ public class Empleado extends Usuario {
 
     @Override
     public void mostrarInfo() {
-        System.out.println("Empleado: " + nombre + " | Rol: " + rol);
+        System.out.println("Empleado: " + getNombre() + " " + getApellido() + " | Rol: " + rol);
     }
 }
