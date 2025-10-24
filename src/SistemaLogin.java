@@ -10,22 +10,7 @@ public class SistemaLogin {
     }
 
     public void inicio(){
-        System.out.println("Seleccione una opcion: ");
-        System.out.println("1. Empleado");
-        System.out.println("2. Cliente");
-        int opcion = scanner.nextInt();
-        while (opcion != 1 && opcion != 2) {
-            System.out.println("El programa no reconoce el parametro reingrese");
-            opcion = scanner.nextInt();
-        }
-        switch (opcion) {
-            case 1:
-                loginEmpleado();
-                return;
-            case 2:
-                loginCliente();
-                return;
-        }
+        LoginUI.Login();
     }
 
     public void loginEmpleado(){

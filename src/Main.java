@@ -4,6 +4,6 @@ public class Main {
 
         Hotel hotel = new Hotel();
 
-        hotel.init();
+
     }
 }
