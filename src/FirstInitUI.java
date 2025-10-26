@@ -33,7 +33,7 @@ public class FirstInitUI {
         }
         try (Statement stm = db.getConnection().createStatement()){
             stm.executeUpdate(
-                    "INSERT INTO EMPLEADOS VALUES (?, ?, ?, ?, ?)"
+                    "INSERT INTO EMPLEADOS VALUES (?, ?, ?, ?, ?)");
         }
         catch (Exception e) {
             e.printStackTrace();
