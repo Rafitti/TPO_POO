@@ -1,3 +1,4 @@
+import javax.swing.*;
 import java.util.Scanner;
 
 public class SistemaLogin {
@@ -10,7 +11,7 @@ public class SistemaLogin {
     }
 
     public void inicio(){
-        LoginUI.Login();
+        SwingUtilities.invokeLater(() -> new LoginUI());
     }
 
     public void loginEmpleado(){

@@ -268,4 +268,8 @@ public class SistemaDB {
     return null;
     }
   }
+
+    public Connection getConnection() {
+        return conn;
+    }
 }
