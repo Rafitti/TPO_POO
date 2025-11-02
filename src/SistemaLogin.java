@@ -4,15 +4,31 @@ public class SistemaLogin {
 
     private SistemaDB sistemaDB;
     private Scanner scanner =  new Scanner(System.in);
+    private Usuario usuarioLogueado;
 
     public SistemaLogin(SistemaDB sistemaDB) {
         this.sistemaDB = sistemaDB;
     }
 
-    public void inicio(){
-        LoginUI.Login();
+    public void firstInit(){
+       new FirstInitUI(sistemaDB, this).init();
     }
 
+    public void init(){
+        new LoginUI(sistemaDB, this).init();
+    }
+
+    public void setSessionUser(Usuario usuario){
+        this.usuarioLogueado = usuario;
+    }
+
+    public Rol getSessionUserRole(){
+        if(usuarioLogueado != null){
+            return usuarioLogueado.getRol();
+        }
+        return null;
+    }
+    
     public void loginEmpleado(){
         System.out.println("Ingrese su Nombre: ");
         String nombre = scanner.next();

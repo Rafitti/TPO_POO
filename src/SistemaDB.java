@@ -1,11 +1,7 @@
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import java.time.*;
+import java.time.format.*;
 import java.util.logging.Logger;
 
 public class SistemaDB {
@@ -35,6 +31,7 @@ public class SistemaDB {
       stmt.execute("""
           CREATE TABLE IF NOT EXISTS Clientes (
               Id INTEGER PRIMARY KEY AUTOINCREMENT,
+              Mail TEXT NOT NULL,
               Nombre TEXT NOT NULL,
               Apellido TEXT NOT NULL,
               Password TEXT NOT NULL,
@@ -47,6 +44,7 @@ public class SistemaDB {
       stmt.execute("""
           CREATE TABLE IF NOT EXISTS Empleados (
               Id INTEGER PRIMARY KEY AUTOINCREMENT,
+              Mail TEXT NOT NULL,
               Nombre TEXT NOT NULL,
               Apellido TEXT NOT NULL,
               Password TEXT NOT NULL,
@@ -58,8 +56,10 @@ public class SistemaDB {
       stmt.execute("""
           CREATE TABLE IF NOT EXISTS Habitaciones (
               Id INTEGER PRIMARY KEY AUTOINCREMENT,
+              Numero INTEGER NOT NULL,
               Tipo INTEGER NOT NULL CHECK (Tipo BETWEEN 0 AND 2),
               IdEmpleadoACargo INTEGER NOT NULL,
+              FaltaLimpiar BOOLEAN NOT NULL DEFAULT 1,
               FOREIGN KEY(IdEmpleadoACargo) REFERENCES Empleados(Id)
           );
       """);
@@ -70,7 +70,6 @@ public class SistemaDB {
               Id INTEGER PRIMARY KEY AUTOINCREMENT,
               IdHabitacion INTEGER NOT NULL,
               IdCliente INTEGER NOT NULL,
-              FaltaLimpiar BOOLEAN NOT NULL,
               FechaInicio TEXT NOT NULL,
               FechaFin TEXT NOT NULL,
               FOREIGN KEY(IdHabitacion) REFERENCES Habitaciones(Id),
@@ -97,13 +96,14 @@ public class SistemaDB {
 
       while(rs.next()){
         int id = rs.getInt("Id");
+        String mail = rs.getString("Mail");
         String nombre = rs.getString("Nombre");
         String apellido = rs.getString("Apellido");
         String password = rs.getString("Password");
         Rol rol = Rol.values()[rs.getInt("Rol")];
         
 
-        Empleado empleado = new Empleado(id, nombre, apellido,password, rol);
+        Empleado empleado = new Empleado(id, mail, nombre, apellido,password, rol);
         empleados.add(empleado);
       }
       return empleados;
@@ -114,19 +114,19 @@ public class SistemaDB {
     }
   }
 
-  public Empleado getEmpleadoByNombreAndPassword(String nombre, String password) {
+  public Empleado getEmpleadoByMailAndPassword(String mail, String password) {
     try{
       Statement stmt = conn.createStatement();
 
-      ResultSet rs = stmt.executeQuery("SELECT * FROM Empleados WHERE Nombre = '" + nombre + "' AND Password = '" + password + "';");
+      ResultSet rs = stmt.executeQuery("SELECT * FROM Empleados WHERE Mail = '" + mail + "' AND Password = '" + password + "';");
 
       if(rs.next()){
         int id = rs.getInt("Id");
+        String nombre = rs.getString("Nombre");
         String apellido = rs.getString("Apellido");
         Rol rol = Rol.values()[rs.getInt("Rol")];
-        
 
-        Empleado empleado = new Empleado(id, nombre, apellido, password, rol);
+        Empleado empleado = new Empleado(id, mail, nombre, apellido, password, rol);
         return empleado;
       }
       return null;
@@ -136,6 +136,51 @@ public class SistemaDB {
     return null;
     }
   } 
+
+  public Empleado createEmpleado(String mail, String nombre, String apellido, String password, Rol rol){
+      try {
+          String sql = "INSERT INTO Empleados (Mail, Nombre, Apellido, Password, Rol) VALUES (?,?,?,?,?)";
+
+          PreparedStatement pstmt = conn.prepareStatement(sql);
+
+          pstmt.setString(1, mail);
+          pstmt.setString(2, nombre);
+          pstmt.setString(3, apellido);
+          pstmt.setString(4, password);
+          pstmt.setInt(5, Rol.ADMINISTRADOR.ordinal());
+
+          pstmt.executeUpdate();
+
+          ResultSet generatedKeys = pstmt.getGeneratedKeys();
+          int id = 0;
+          if (generatedKeys.next()) {
+              id = generatedKeys.getInt(1);
+          }
+          return new Empleado(id, mail, nombre, apellido, password, rol);
+      }
+      catch(SQLException e){
+          logger.info(e.getMessage());
+          return null;
+      }
+  }
+
+  public boolean deleteEmpleado(int id){
+      try {
+          String sql = "DELETE FROM Empleados WHERE Id = ?";
+
+          PreparedStatement pstmt = conn.prepareStatement(sql);
+
+          pstmt.setInt(1, id);
+
+          int affectedRows = pstmt.executeUpdate();
+
+          return affectedRows > 0;
+      }
+      catch(SQLException e){
+          logger.info(e.getMessage());
+          return false;
+      }
+  }
 
   public ArrayList<Cliente> getClientes(){
     try{
@@ -147,13 +192,14 @@ public class SistemaDB {
 
       while(rs.next()){
         int id = rs.getInt("Id");
+        String mail = rs.getString("Mail");
         String nombre = rs.getString("Nombre");
         String apellido = rs.getString("Apellido");
         String password = rs.getString("Password");
         int dni = rs.getInt("DNI");
-        
+        Integer telefono = rs.getInt("Telefono");
 
-        Cliente cliente = new Cliente(id, nombre, apellido, dni, password);
+        Cliente cliente = new Cliente(id, mail, nombre, apellido, dni, password, telefono);
         clientes.add(cliente);
       }
       return clientes;
@@ -164,19 +210,20 @@ public class SistemaDB {
     }
   }
 
-  public Cliente getClienteByNombreAndPassword(String nombre, String password) {
+  public Cliente getClienteByMailAndPassword(String mail, String password) {
     try{
       Statement stmt = conn.createStatement();
 
-      ResultSet rs = stmt.executeQuery("SELECT * FROM Clientes WHERE Nombre = '" + nombre + "' AND Password = '" + password + "';");
+      ResultSet rs = stmt.executeQuery("SELECT * FROM Clientes WHERE Mail = '" + mail + "' AND Password = '" + password + "';");
 
       if(rs.next()){
         int id = rs.getInt("Id");
+        String nombre = rs.getString("Nombre");
         String apellido = rs.getString("Apellido");
         int dni = rs.getInt("DNI");
-        
+        Integer telefono = rs.getInt("Telefono");
 
-        Cliente cliente = new Cliente(id, nombre, apellido, dni, password);
+        Cliente cliente = new Cliente(id, mail, nombre, apellido, dni, password, telefono);
         return cliente;
       }
       return null;
@@ -185,6 +232,52 @@ public class SistemaDB {
       e.printStackTrace(System.err);
     return null;
     }
+  }
+
+  public Cliente createCliente(String mail, String nombre, String apellido, String password, int dni, Integer telefono){
+      try {
+          String sql = "INSERT INTO Clientes (Mail, Nombre, Apellido, Password, DNI) VALUES (?,?,?,?,?)";
+
+          PreparedStatement pstmt = conn.prepareStatement(sql);
+
+          pstmt.setString(1, mail);
+          pstmt.setString(2, nombre);
+          pstmt.setString(3, apellido);
+          pstmt.setString(4, password);
+          pstmt.setInt(5, dni);
+          pstmt.setObject(6, telefono);
+
+          pstmt.executeUpdate();
+
+          ResultSet generatedKeys = pstmt.getGeneratedKeys();
+          int id = 0;
+          if (generatedKeys.next()) {
+              id = generatedKeys.getInt(1);
+          }
+          return new Cliente(id, mail, nombre, apellido, dni, password, telefono);
+      }
+      catch(SQLException e){
+          logger.info(e.getMessage());
+          return null;
+      }
+  }
+
+  public boolean deleteCliente(int id){
+      try {
+          String sql = "DELETE FROM Clientes WHERE Id = ?";
+
+          PreparedStatement pstmt = conn.prepareStatement(sql);
+
+          pstmt.setInt(1, id);
+
+          int affectedRows = pstmt.executeUpdate();
+
+          return affectedRows > 0;
+      }
+      catch(SQLException e){
+          logger.info(e.getMessage());
+          return false;
+      }
   }
 
   public ArrayList<Habitacion> getHabitaciones(){
@@ -196,12 +289,13 @@ public class SistemaDB {
       ArrayList<Habitacion> habitaciones = new ArrayList<Habitacion>();
 
       while(rs.next()){
-        int numero = rs.getInt("Id");
+        int id = rs.getInt("Id");
+        int numero = rs.getInt("Numero");
         TipoHabitacion tipo = TipoHabitacion.values()[rs.getInt("Tipo")];
         int idEmpleadoACargo = rs.getInt("IdEmpleadoACargo");
-        
+        boolean faltaLimpiar = rs.getBoolean("FaltaLimpiar");
 
-        Habitacion habitacion = new Habitacion(numero, tipo, idEmpleadoACargo);
+        Habitacion habitacion = new Habitacion(id,numero, tipo, idEmpleadoACargo, faltaLimpiar);
         habitaciones.add(habitacion);
       }
       return habitaciones;
@@ -210,6 +304,51 @@ public class SistemaDB {
       e.printStackTrace(System.err);
     return null;
     }
+  }
+
+  public Habitacion createHabitacion(int numero, TipoHabitacion tipo, int idEmpleadoACargo){
+      try {
+          String sql = "INSERT INTO Habitaciones (Tipo, IdEmpleadoACargo) VALUES (?,?,?)";
+
+          PreparedStatement pstmt = conn.prepareStatement(sql);
+
+          pstmt.setInt(1, numero);
+          pstmt.setInt(2, tipo.ordinal());
+          pstmt.setInt(3, idEmpleadoACargo);
+
+          pstmt.executeUpdate();
+
+          ResultSet generatedKeys = pstmt.getGeneratedKeys();
+
+          int id = 0;
+          if (generatedKeys.next()) {
+              id = generatedKeys.getInt(1);
+          }
+
+          return new Habitacion(id, numero, tipo, idEmpleadoACargo, false);
+      }
+      catch(SQLException e){
+          logger.info(e.getMessage());
+          return null;
+      }
+  }
+
+  public boolean deleteHabitacion(int id){  
+      try {
+          String sql = "DELETE FROM Habitaciones WHERE Id = ?";
+
+          PreparedStatement pstmt = conn.prepareStatement(sql);
+
+          pstmt.setInt(1, id);
+
+          int affectedRows = pstmt.executeUpdate();
+
+          return affectedRows > 0;
+      }
+      catch(SQLException e){
+          logger.info(e.getMessage());
+          return false;
+      }
   }
 
   public ArrayList<Reserva> getReservas(){
@@ -226,9 +365,8 @@ public class SistemaDB {
         int id = rs.getInt("Id");
         int idCliente = rs.getInt("IdCliente");
         int idHabitacion = rs.getInt("IdHabitacion");
-        LocalDate fechaInicio = LocalDate.parse(rs.getString("FechaInicio"), formatter);
-        LocalDate fechaFin = LocalDate.parse(rs.getString("FechaFin"), formatter);
-        
+        LocalDateTime fechaInicio = LocalDateTime.parse(rs.getString("FechaInicio"), formatter);
+        LocalDateTime fechaFin = LocalDateTime.parse(rs.getString("FechaFin"), formatter);
 
         Reserva reserva = new Reserva(id, idCliente, idHabitacion, fechaInicio, fechaFin);
         reservas.add(reserva);
@@ -254,8 +392,8 @@ public class SistemaDB {
       while(rs.next()){
         int id = rs.getInt("Id");
         int idHabitacion = rs.getInt("IdHabitacion");
-        LocalDate fechaInicio = LocalDate.parse(rs.getString("FechaInicio"), formatter);
-        LocalDate fechaFin = LocalDate.parse(rs.getString("FechaFin"), formatter);
+        LocalDateTime fechaInicio = LocalDateTime.parse(rs.getString("FechaInicio"), formatter);
+        LocalDateTime fechaFin = LocalDateTime.parse(rs.getString("FechaFin"), formatter);
         
 
         Reserva reserva = new Reserva(id, clienteId, idHabitacion, fechaInicio, fechaFin);
@@ -268,4 +406,49 @@ public class SistemaDB {
     return null;
     }
   }
+
+  public Reserva createReserva(int idHabitacion, int idCliente, LocalDateTime fechaInicio, LocalDateTime fechaFin){
+      try {
+        String sql = "INSERT INTO Reservas (IdHabitacion, IdCliente, FechaInicio, FechaFin) VALUES (?,?,?,?)";
+
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+
+        pstmt.setInt(1, idHabitacion);
+        pstmt.setInt(2, idCliente);
+        pstmt.setObject(3, fechaInicio);
+        pstmt.setObject(4, fechaFin);
+
+        pstmt.executeUpdate();
+        ResultSet generatedKeys = pstmt.getGeneratedKeys();
+
+        int id = 0;
+        if (generatedKeys.next()) {
+          id = generatedKeys.getInt(1);
+        }
+
+        return new Reserva(id, idCliente, idHabitacion, fechaInicio, fechaFin);
+      }
+      catch(SQLException e){
+          logger.info(e.getMessage());
+          return null;
+      }
+  }
+
+  public boolean deleteReserva(int id){
+      try {
+          String sql = "DELETE FROM Reservas WHERE Id = ?";
+
+          PreparedStatement pstmt = conn.prepareStatement(sql);
+
+          pstmt.setInt(1, id);
+
+          int affectedRows = pstmt.executeUpdate();
+
+          return affectedRows > 0;
+      }
+      catch(SQLException e){
+          logger.info(e.getMessage());
+          return false;
+      }
+  } 
 }
