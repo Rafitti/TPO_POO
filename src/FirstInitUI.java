@@ -1,28 +1,143 @@
 import javax.swing.*;
+import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.logging.Logger;
 
-public class FirstInitUI {
-    private JPanel AdminUI;
+public class FirstInitUI implements ActionListener {
+    private JFrame frame;
+    private JPanel fondo;
+    private JLabel tituloAdmin;
+    private JLabel mailLabel;
+    private JTextField mailAdmin;
+    private JLabel nombreLabel;
+    private JTextField nombreAdmin;
+    private JLabel apellidoLabel;
+    private JTextField apellidoAdmin;
+    private JLabel passwordLabel;
     private JPasswordField passwordAdmin;
-    private JTextField SurnameAdmin;
-    private JTextField NameAdmim;
-    private JButton button1;
+    private JButton ingresarButton;
     private SistemaDB db;
+    private SistemaLogin sistemaLogin;
+    private Logger logger = Logger.getLogger(getClass().getName());
 
+    public FirstInitUI(SistemaDB sistemaDB, SistemaLogin sistemaLogin) {
+        this.db = sistemaDB;
+        this.sistemaLogin = sistemaLogin;
 
-    public FirstInitUI() {
+        frame = new JFrame("Registrar Administrador");
+        frame.setSize(400,300);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLayout(null);
+        frame.setResizable(false);
 
+        fondo = new JPanel();
+        fondo.setBounds(0, 0, 400, 300);
+        fondo.setBackground(Color.DARK_GRAY);
+        fondo.setLayout(null);
+        frame.add(fondo);
+
+        tituloAdmin = new JLabel("Bienvenido! Registre al administrador:");
+        tituloAdmin.setBounds(90,20,250,30);
+        tituloAdmin.setForeground(Color.WHITE);
+
+        mailLabel = new JLabel("Email:");
+        mailLabel.setBounds(20,50,80,20);
+        mailLabel.setForeground(Color.WHITE);
+        mailAdmin = new JTextField();
+        mailAdmin.setBounds(100,50,200,20);
+        mailAdmin.setToolTipText("Email");
+
+        nombreLabel = new JLabel("Nombre:");
+        nombreLabel.setBounds(20,80,80,20);
+        nombreLabel.setForeground(Color.WHITE);
+        nombreAdmin = new JTextField();
+        nombreAdmin.setBounds(100,80, 200,20);
+        nombreAdmin.setToolTipText("Nombre");
+
+        apellidoLabel = new JLabel("Apellido:");
+        apellidoLabel.setBounds(20,110,80,20);
+        apellidoLabel.setForeground(Color.WHITE);
+        apellidoAdmin = new JTextField();
+        apellidoAdmin.setBounds(100,110,200,20);
+        apellidoAdmin.setToolTipText("Apellido");
+
+        passwordLabel = new JLabel("Contraseña:");
+        passwordLabel.setBounds(20,140,80,20);
+        passwordLabel.setForeground(Color.WHITE);
+        passwordAdmin = new JPasswordField();
+        passwordAdmin.setBounds(100,140,200,20);
+        passwordAdmin.setToolTipText("Contraseña");
+
+        ingresarButton = new JButton("Ingresar");
+        ingresarButton.setBounds(100,180,200,30);
+
+        fondo.add(tituloAdmin);
+        fondo.add(mailLabel);
+        fondo.add(mailAdmin);
+        fondo.add(nombreLabel);
+        fondo.add(nombreAdmin);
+        fondo.add(apellidoLabel);
+        fondo.add(apellidoAdmin);
+        fondo.add(passwordLabel);   
+        fondo.add(passwordAdmin);
+        fondo.add(ingresarButton);
+
+        ingresarButton.addActionListener(this);
     }
 
-    public FirstInitUI(SistemaDB sistemaDB) {
-        this.db = db;
-        JFrame frame = new JFrame("Registrar Administrador");
-        frame.setContentPane(new FirstInitUI().AdminUI);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.pack();
-        frame.setSize(400,300);
-        frame.setLocationRelativeTo(null);
-        frame.setResizable(false);
+    public void init(){
         frame.setVisible(true);
     }
 
+    @Override
+    public void actionPerformed(ActionEvent e){
+
+        if(e.getSource() == ingresarButton){
+            try{
+                String mail = mailAdmin.getText();
+
+                if(mail.isEmpty()){
+                    JOptionPane.showMessageDialog(fondo,"Debe ingresar un email.");
+                    return;
+                }
+
+                String nombre = nombreAdmin.getText();
+
+                if(nombre.isEmpty()){
+                    JOptionPane.showMessageDialog(fondo,"Debe ingresar un nombre");
+                    return;
+                }
+
+                String apellido = apellidoAdmin.getText();
+
+                if(apellido.isEmpty()){
+                    JOptionPane.showMessageDialog(fondo,"Debe ingresar un apellido.");
+                    return;
+                }
+
+                String password = String.copyValueOf(passwordAdmin.getPassword());
+
+                if(password.isEmpty()){
+                    JOptionPane.showMessageDialog(fondo,"Debe ingresar una contraseña.");
+                    return;
+                }
+
+                Empleado admin = db.createEmpleado(mail, nombre, apellido, password, Rol.ADMINISTRADOR);
+                if(admin == null){
+                    JOptionPane.showMessageDialog(fondo,"Error al crear el administrador.");
+                    return;
+                }
+                JOptionPane.showMessageDialog(fondo,"Administrador creado exitosamente.");
+                logger.info("Administrador creado: " + admin.getNombre() + " " + admin.getApellido());
+
+                frame.dispose();
+
+                sistemaLogin.init();
+
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+    }
 }
