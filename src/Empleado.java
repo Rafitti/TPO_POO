@@ -1,10 +1,8 @@
 public class Empleado extends Usuario {
-    private String password;
     private Rol rol;
 
-    public Empleado(int id, String nombre, String apellido, String password, Rol rol) {
-        super(id, nombre, apellido);
-        this.password = password;
+    public Empleado(int id,String mail, String nombre, String apellido, String password, Rol rol) {
+        super(id, mail, nombre, apellido,password);
         this.rol = rol;
     }
 
