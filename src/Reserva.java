@@ -1,14 +1,14 @@
-import java.time.LocalDate;
+import java.time.*;
 
 public class Reserva {
   
   private int id;
     private int idCliente;
     private int idHabitacion;
-    private LocalDate fechaInicio;
-    private LocalDate fechaFin;
+    private LocalDateTime fechaInicio;
+    private LocalDateTime fechaFin;
 
-    public Reserva(int id, int idCliente, int idHabitacion, LocalDate fechaInicio, LocalDate fechaFin) {
+    public Reserva(int id, int idCliente, int idHabitacion, LocalDateTime fechaInicio, LocalDateTime fechaFin) {
         this.id = id;
         this.idCliente = idCliente;
         this.idHabitacion = idHabitacion;
@@ -28,11 +28,11 @@ public class Reserva {
         return idHabitacion;
     }
 
-    public LocalDate getFechaInicio() {
+    public LocalDateTime getFechaInicio() {
         return fechaInicio;
     }
 
-    public LocalDate getFechaFin() {
+    public LocalDateTime getFechaFin() {
         return fechaFin;
     }
 

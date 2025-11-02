@@ -1,3 +1,7 @@
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+import java.time.LocalTime;
 import java.util.logging.Logger;
 
 public class Hotel {
@@ -17,22 +21,22 @@ public class Hotel {
           sistemaLogin = new SistemaLogin(sistemaDB);
           sistemaReservas = new SistemaReservas(sistemaDB);
           sistemaEmpleados = new SistemaEmpleados(sistemaDB);
-          logger.info(String.valueOf("empleados null?: " + sistemaDB.getEmpleados() == null));
-          logger.info("empleados: " + sistemaDB.getEmpleados().isEmpty());
-          if (sistemaDB.getEmpleados() == null || sistemaDB.getEmpleados().isEmpty()) {
-              System.out.println("⚠️ No hay empleados registrados. Creando nuevo administrador...");
-              new FirstInitUI(sistemaDB);
-          } else {
-              System.out.println("✅ Empleados encontrados. Continuando con el sistema...");
-              logger.info("Base de datos inicializada correctamente. chu´pañaasdasd");
-              init();
-          }
+          
     } catch (Exception e) {
           System.out.println("Error al inicializar el sistema: " + e.getMessage());
     }
   }
 
   public void init(){
-   sistemaLogin.inicio();
+    logger.info(String.valueOf("empleados null?: " + (sistemaDB.getEmpleados() == null)));
+    logger.info("empleados: " + sistemaDB.getEmpleados().isEmpty());
+
+    if (sistemaDB.getEmpleados() == null || sistemaDB.getEmpleados().isEmpty()) {
+        System.out.println("⚠️ No hay empleados registrados. Creando nuevo administrador...");
+        sistemaLogin.firstInit();
+    } else {
+      System.out.println("✅ Empleados encontrados. Continuando con el sistema...");
+      sistemaLogin.init();
+    }
   }
 }
