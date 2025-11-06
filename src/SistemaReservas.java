@@ -99,6 +99,12 @@ public class SistemaReservas {
     return isRoomAvailable(habitacionId, start, end, null);
   }
 
+  // Devuelve true si el cliente tiene al menos una reserva registrada
+  public boolean hasReservationsForClient(int clienteId){
+    List<Reserva> list = getByClienteId(clienteId);
+    return list != null && !list.isEmpty();
+  }
+
   public boolean delete(int id){
     return db.entityDelete("Reservas", id);
   }

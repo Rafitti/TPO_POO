@@ -14,6 +14,7 @@ import javax.swing.table.*;
 
 public class ClientesUI {
   private final SistemaClientes sc;
+  private final SistemaReservas sr;
   private JFrame frame;
   private JPanel fondo;
   private JLabel titulo;
@@ -21,8 +22,9 @@ public class ClientesUI {
   private JButton agregarButton;
   private JTable tabla;
 
-  public ClientesUI(SistemaClientes sc, MenuUI menu){
+  public ClientesUI(SistemaClientes sc, SistemaReservas sr, MenuUI menu){
     this.sc = sc;
+    this.sr = sr;
     this.frame = new JFrame("Gestión de Clientes");
     this.frame.setSize(700, 500);
     this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -93,7 +95,7 @@ public class ClientesUI {
     int accionesCol = tabla.getColumnModel().getColumnCount() - 1;
     TableColumn accionesColumn = tabla.getColumnModel().getColumn(accionesCol);
     accionesColumn.setCellRenderer(new ActionCellRenderer());
-    accionesColumn.setCellEditor(new ClientActionCellEditor(new JCheckBox(), sc, tabla));
+  accionesColumn.setCellEditor(new ClientActionCellEditor(new JCheckBox(), sc, sr, tabla));
     accionesColumn.setPreferredWidth(160);
     accionesColumn.setMaxWidth(260);
 
@@ -163,11 +165,12 @@ public class ClientesUI {
     private JButton delBtn;
     private JTable table;
     private SistemaClientes sc;
+    private SistemaReservas sr;
     private int currentId;
     private int editingRowViewIndex; // índice de la fila en vista mientras se edita
 
-    public ClientActionCellEditor(JCheckBox chk, SistemaClientes sc, JTable table){
-      this.sc = sc; this.table = table;
+    public ClientActionCellEditor(JCheckBox chk, SistemaClientes sc, SistemaReservas sr, JTable table){
+      this.sc = sc; this.sr = sr; this.table = table;
       panel = new JPanel(new FlowLayout(FlowLayout.CENTER,6,4));
       panel.setOpaque(true);
       panel.setPreferredSize(new Dimension(150,28));
@@ -258,8 +261,14 @@ public class ClientesUI {
         fireEditingCanceled();
         return;
       }
-
+      // Validación: no permitir eliminar si el cliente tiene reservas
       try {
+        if (sr != null && sr.hasReservationsForClient(currentId)) {
+          JOptionPane.showMessageDialog(table, "No se puede eliminar: el cliente tiene reservas asociadas.", "Error", JOptionPane.ERROR_MESSAGE);
+          fireEditingCanceled();
+          return;
+        }
+
         boolean ok = sc.delete(currentId);
         if (!ok) {
           JOptionPane.showMessageDialog(table, "Error al eliminar cliente", "Error", JOptionPane.ERROR_MESSAGE);

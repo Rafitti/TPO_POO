@@ -98,7 +98,7 @@ public class MenuUI implements ActionListener {
             new HabitacionesUI(sh, this).init();
             frame.setVisible(false);
         } else if (e.getSource() == botonClientes) {
-            new ClientesUI(sc, this).init();
+            new ClientesUI(sc, sr, this).init();
             frame.setVisible(false);
         } else if (e.getSource() == botonEmpleados) {
             new EmpleadosUI(se, this).init();
