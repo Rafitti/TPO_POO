@@ -1,63 +1,35 @@
-import java.util.Scanner;
-
 public class SistemaLogin {
+    private SistemaReservas sr;
+    private SistemaHabitaciones sh;
+    private SistemaClientes sc;
+    private SistemaEmpleados se;
+    private SistemaBuffet sb;
+    private Empleado empleadoLogueado;
 
-    private SistemaDB sistemaDB;
-    private Scanner scanner =  new Scanner(System.in);
-    private Usuario usuarioLogueado;
-
-    public SistemaLogin(SistemaDB sistemaDB) {
-        this.sistemaDB = sistemaDB;
+    public SistemaLogin(SistemaEmpleados se, SistemaReservas sr, SistemaHabitaciones sh, SistemaClientes sc, SistemaBuffet sb) {
+        this.se = se;
+        this.sr = sr;
+        this.sh = sh;
+        this.sc = sc;
+        this.sb = sb;
     }
 
     public void firstInit(){
-       new FirstInitUI(sistemaDB, this).init();
+        new FirstInitUI(se, this).init();
     }
 
     public void init(){
-        new LoginUI(sistemaDB, this).init();
+        new LoginUI(this, sr, sh, sc, se, sb).init();
     }
 
-    public void setSessionUser(Usuario usuario){
-        this.usuarioLogueado = usuario;
+    public void setSessionUser(Empleado empleado){
+        this.empleadoLogueado = empleado;
     }
 
-    public Rol getSessionUserRole(){
-        if(usuarioLogueado != null){
-            return usuarioLogueado.getRol();
+    public Rol getSessionRole(){
+        if(empleadoLogueado != null){
+            return empleadoLogueado.getRol();
         }
         return null;
     }
-    
-    public void loginEmpleado(){
-        System.out.println("Ingrese su Nombre: ");
-        String nombre = scanner.next();
-        System.out.println("Ingrese su Contraseña: ");
-        String password = scanner.next();
-
-        Empleado empleado = sistemaDB.getEmpleadoByNombreAndPassword(nombre, password);
-
-        if(empleado != null){
-            System.out.println("Login exitoso. Bienvenido, " + empleado.getNombre() + "!");
-        } else {
-            System.out.println("Login fallido. Nombre o contraseña incorrectos.");
-        }
-    }
-
-    public void loginCliente(){
-        System.out.println("Ingrese su Nombre: ");
-        String nombre = scanner.next();
-        System.out.println("Ingrese su Contraseña: ");
-        String password = scanner.next();
-
-        Cliente cliente = sistemaDB.getClienteByNombreAndPassword(nombre, password);
-        
-        if(cliente != null){
-            System.out.println("Login exitoso. Bienvenido, " + cliente.getNombre() + "!");
-        } else {
-            System.out.println("Login fallido. Nombre o contraseña incorrectos.");
-        }
-        //todo: metodo para conectarme con el gestor de archivos
-    }
-
 }
