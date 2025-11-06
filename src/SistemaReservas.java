@@ -68,6 +68,37 @@ public class SistemaReservas {
     return mapRowToReserva(reserva);
   }
 
+  public boolean update(int id, Map<String,Object> values){
+    // If caller provides LocalDateTime for FechaInicio/FechaFin, convert to formatted string
+    if(values.containsKey("FechaInicio") && values.get("FechaInicio") instanceof java.time.LocalDateTime){
+      values.put("FechaInicio", ((java.time.LocalDateTime)values.get("FechaInicio")).format(formatter));
+    }
+    if(values.containsKey("FechaFin") && values.get("FechaFin") instanceof java.time.LocalDateTime){
+      values.put("FechaFin", ((java.time.LocalDateTime)values.get("FechaFin")).format(formatter));
+    }
+    return db.entityUpdate("Reservas", id, values);
+  }
+
+  // Verifica si una habitación está disponible en el intervalo [start, end).
+  // Si excludeId no es null se ignora la reserva con ese Id (útil al editar).
+  public boolean isRoomAvailable(int habitacionId, LocalDateTime start, LocalDateTime end, Integer excludeId){
+    if(start == null || end == null) return false;
+    List<Reserva> all = getAll();
+    for(Reserva r : all){
+      if(excludeId != null && r.getId() == excludeId) continue;
+      if(r.getIdHabitacion() != habitacionId) continue;
+      LocalDateTime rStart = r.getFechaInicio();
+      LocalDateTime rEnd = r.getFechaFin();
+      // overlap check: start < rEnd && rStart < end
+      if(start.isBefore(rEnd) && rStart.isBefore(end)) return false;
+    }
+    return true;
+  }
+
+  public boolean isRoomAvailable(int habitacionId, LocalDateTime start, LocalDateTime end){
+    return isRoomAvailable(habitacionId, start, end, null);
+  }
+
   public boolean delete(int id){
     return db.entityDelete("Reservas", id);
   }

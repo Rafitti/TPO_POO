@@ -1,6 +1,5 @@
 import java.util.*;
 import java.awt.Component;
-import java.awt.Menu;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.*;
@@ -9,7 +8,6 @@ import javax.swing.table.*;
 
 public class HabitacionesUI {
   private SistemaHabitaciones sh;
-  private MenuUI menu;
   private JFrame frame;
   private JPanel fondo;
   private JLabel titulo;
@@ -19,7 +17,6 @@ public class HabitacionesUI {
 
   public HabitacionesUI(SistemaHabitaciones sh,MenuUI menu) {
     this.sh = sh;
-    this.menu = menu;
     this.frame = new JFrame("Gestión de Habitaciones");
     this.frame.setSize(500, 500);
     this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

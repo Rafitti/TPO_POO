@@ -1,5 +1,6 @@
 ### Otros ###
 *.db
+*.class
 
 ### IntelliJ IDEA ###
 out/

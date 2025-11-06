@@ -14,7 +14,6 @@ import javax.swing.table.*;
 
 public class EmpleadosUI {
   private final SistemaEmpleados se;
-  private final MenuUI menu;
   private JFrame frame;
   private JPanel fondo;
   private JLabel titulo;
@@ -24,7 +23,6 @@ public class EmpleadosUI {
 
   public EmpleadosUI(SistemaEmpleados se, MenuUI menu){
     this.se = se;
-    this.menu = menu;
     this.frame = new JFrame("Gestión de Empleados");
     this.frame.setSize(800, 500);
     this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

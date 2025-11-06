@@ -92,7 +92,7 @@ public class MenuUI implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == botonReservas) {
-            new ReservasUI(sr).init();
+            new ReservasUI(sr, sc, sh, this).init();
             frame.setVisible(false);
         } else if (e.getSource() == botonHabitaciones) {
             new HabitacionesUI(sh, this).init();
