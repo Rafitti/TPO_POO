@@ -17,12 +17,12 @@ public class FirstInitUI implements ActionListener {
     private JLabel passwordLabel;
     private JPasswordField passwordAdmin;
     private JButton ingresarButton;
-    private SistemaDB db;
+    private SistemaEmpleados se;
     private SistemaLogin sistemaLogin;
     private Logger logger = Logger.getLogger(getClass().getName());
 
-    public FirstInitUI(SistemaDB sistemaDB, SistemaLogin sistemaLogin) {
-        this.db = sistemaDB;
+    public FirstInitUI(SistemaEmpleados sistemaEmpleados, SistemaLogin sistemaLogin) {
+        this.se = sistemaEmpleados;
         this.sistemaLogin = sistemaLogin;
 
         frame = new JFrame("Registrar Administrador");
@@ -123,7 +123,7 @@ public class FirstInitUI implements ActionListener {
                     return;
                 }
 
-                Empleado admin = db.createEmpleado(mail, nombre, apellido, password, Rol.ADMINISTRADOR);
+                Empleado admin = se.create(mail, nombre, apellido, password, Rol.ADMINISTRADOR);
                 if(admin == null){
                     JOptionPane.showMessageDialog(fondo,"Error al crear el administrador.");
                     return;

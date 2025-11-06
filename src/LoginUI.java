@@ -11,12 +11,20 @@ public class LoginUI implements ActionListener {
     private JLabel passwordLabel;
     private JPasswordField passwordUsuario;
     private JButton aceptarButton;
-    private SistemaDB db;
-    private SistemaLogin sistemaLogin;
+    private SistemaLogin sl;
+    private SistemaReservas sr;
+    private SistemaHabitaciones sa;
+    private SistemaClientes sc;
+    private SistemaEmpleados se;
+    private SistemaBuffet sb;
 
-    public LoginUI(SistemaDB db,SistemaLogin sistemaLogin) {
-        this.db = db;
-        this.sistemaLogin = sistemaLogin;
+    public LoginUI(SistemaLogin sl,SistemaReservas sr, SistemaHabitaciones sa, SistemaClientes sc, SistemaEmpleados se, SistemaBuffet sb) {
+        this.sl = sl;
+        this.sr = sr;
+        this.sa = sa;
+        this.sc = sc;
+        this.se = se;
+        this.sb = sb;
 
         frame = new JFrame("Login");
         frame.setSize(500, 500);
@@ -77,25 +85,15 @@ public class LoginUI implements ActionListener {
                     JOptionPane.showMessageDialog(fondo,"Debe ingresar una contraseña.");
                     return;
                 }
-
-                Cliente cliente = db.getClienteByMailAndPassword(mail, password);
-                if(cliente != null){
-                    JOptionPane.showMessageDialog(fondo, "Login exitoso");
-                    sistemaLogin.setSessionUser(cliente);
-                    frame.dispose();
-
-                    new MenuUI(db, sistemaLogin).init();
-                    return;
-                }
-
                 
-                Empleado empleado = db.getEmpleadoByMailAndPassword(mail, password);
+                Empleado empleado = se.getByMailAndPassword(mail, password);
+                
                 if(empleado != null){
                     JOptionPane.showMessageDialog(fondo, "Login exitoso");
-                    sistemaLogin.setSessionUser(empleado);
+                    sl.setSessionUser(empleado);
                     frame.dispose();
 
-                    new MenuUI(db, sistemaLogin).init();
+                    new MenuUI(sl,sr,sa,sc,se,sb).init();
                     return;
                 }
 
