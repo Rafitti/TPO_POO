@@ -6,12 +6,11 @@ public abstract class Usuario {
     protected String password;
 
 
-    public Usuario(int id,String mail, String nombre, String apellido, String password) {
+    public Usuario(int id,String mail, String nombre, String apellido) {
         this.id = id;
         this.mail = mail;
         this.nombre = nombre;
         this.apellido = apellido;
-        this.password = password;
     }
 
     public int getId() {

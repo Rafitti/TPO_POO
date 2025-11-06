@@ -9,7 +9,10 @@ public class Hotel {
   private SistemaDB sistemaDB ;
   private SistemaLogin sistemaLogin;
   private SistemaReservas sistemaReservas;
+  private SistemaHabitaciones sistemaHabitaciones;
+  private SistemaClientes sistemaClientes;
   private SistemaEmpleados sistemaEmpleados;
+  private SistemaBuffet sistemaBuffet;
   private Logger logger = Logger.getLogger(getClass().getName());
 
   public Hotel(){
@@ -18,9 +21,12 @@ public class Hotel {
 
           sistemaDB.init();
 
-          sistemaLogin = new SistemaLogin(sistemaDB);
           sistemaReservas = new SistemaReservas(sistemaDB);
           sistemaEmpleados = new SistemaEmpleados(sistemaDB);
+          sistemaHabitaciones = new SistemaHabitaciones(sistemaDB);
+          sistemaClientes = new SistemaClientes(sistemaDB);
+          sistemaBuffet = new SistemaBuffet(sistemaDB);
+          sistemaLogin = new SistemaLogin(sistemaEmpleados, sistemaReservas, sistemaHabitaciones, sistemaClientes, sistemaBuffet);
           
     } catch (Exception e) {
           System.out.println("Error al inicializar el sistema: " + e.getMessage());
@@ -28,10 +34,10 @@ public class Hotel {
   }
 
   public void init(){
-    logger.info(String.valueOf("empleados null?: " + (sistemaDB.getEmpleados() == null)));
-    logger.info("empleados: " + sistemaDB.getEmpleados().isEmpty());
 
-    if (sistemaDB.getEmpleados() == null || sistemaDB.getEmpleados().isEmpty()) {
+    logger.info("Cantidad empleados: " + sistemaEmpleados.getAll().size());
+
+    if (sistemaEmpleados.getAll().isEmpty()) {
         System.out.println("⚠️ No hay empleados registrados. Creando nuevo administrador...");
         sistemaLogin.firstInit();
     } else {

@@ -2,10 +2,10 @@ public class Habitacion {
   private int id;
   private int numero;
   private TipoHabitacion tipo;
-  private int IdEmpleadoACargo;
+  private Integer IdEmpleadoACargo;
   private boolean faltaLimpiar;
 
-  public Habitacion(int id,int numero, TipoHabitacion tipo, int IdEmpleadoACargo,boolean faltaLimpiar) {
+  public Habitacion(int id,int numero, TipoHabitacion tipo, Integer IdEmpleadoACargo,boolean faltaLimpiar) {
     this.id = id;
     this.numero = numero;
     this.tipo = tipo;
