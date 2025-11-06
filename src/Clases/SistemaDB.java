@@ -198,7 +198,6 @@ public class SistemaDB {
       Integer id = null;
       if(gen.next()) id = gen.getInt(1);
 
-      // Devolver la fila creada haciendo un select por Id (si existe)
       if(id != null){
         Map<String,Object> where = new HashMap<>();
         where.put("Id", id);

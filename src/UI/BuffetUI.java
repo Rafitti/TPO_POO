@@ -10,6 +10,6 @@ public class BuffetUI {
   }
 
   public void init() {
-    // Implementación de la interfaz gráfica para la gestión del buffet
+    System.out.println("Interfaz de Buffet iniciada.");
   }
 }

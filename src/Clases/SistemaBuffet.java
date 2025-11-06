@@ -6,6 +6,4 @@ public class SistemaBuffet {
     public SistemaBuffet(SistemaDB db) {
         this.db = db;
     }
-
-    // Métodos para gestionar el buffet
 }

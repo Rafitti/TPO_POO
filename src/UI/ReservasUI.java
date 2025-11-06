@@ -12,7 +12,6 @@ import javax.swing.table.*;
 import java.time.*;
 import java.time.format.*;
 
-// UI para gestionar Reservas. Muestra nombre del cliente en lugar de su Id.
 public class ReservasUI {
   private final SistemaReservas sr;
   private final SistemaClientes sc;
@@ -114,8 +113,8 @@ public class ReservasUI {
 
     int accionesCol = tabla.getColumnModel().getColumnCount() - 1;
     TableColumn accionesColumn = tabla.getColumnModel().getColumn(accionesCol);
-    accionesColumn.setCellRenderer(new ActionCellRenderer());
-    accionesColumn.setCellEditor(new ReservaActionCellEditor(new JCheckBox(), sr, sc, sh, tabla));
+  accionesColumn.setCellRenderer(new ActionCellRenderer());
+  accionesColumn.setCellEditor(new ActionCellEditor(new JCheckBox(), sr, sc, sh, tabla));
     accionesColumn.setPreferredWidth(160);
     accionesColumn.setMaxWidth(260);
 
@@ -202,7 +201,7 @@ public class ReservasUI {
     }
   }
 
-  // Renderer/editor
+  // Celda de acciones que contiene botones Editar y Eliminar
   private static class ActionCellRenderer extends JPanel implements TableCellRenderer {
     public ActionCellRenderer(){
       setLayout(new FlowLayout(FlowLayout.CENTER,6,4));
@@ -224,7 +223,7 @@ public class ReservasUI {
     }
   }
 
-  private static class ReservaActionCellEditor extends AbstractCellEditor implements TableCellEditor {
+  private static class ActionCellEditor extends AbstractCellEditor implements TableCellEditor {
     private JPanel panel;
     private JButton editBtn;
     private JButton delBtn;
@@ -235,7 +234,7 @@ public class ReservasUI {
     private int currentId;
     private int editingRowViewIndex;
 
-    public ReservaActionCellEditor(JCheckBox chk, SistemaReservas sr, SistemaClientes sc, SistemaHabitaciones sh, JTable table){
+    public ActionCellEditor(JCheckBox chk, SistemaReservas sr, SistemaClientes sc, SistemaHabitaciones sh, JTable table){
       this.sr = sr; this.sc = sc; this.sh = sh; this.table = table;
       panel = new JPanel(new FlowLayout(FlowLayout.CENTER,6,4));
       panel.setOpaque(true);

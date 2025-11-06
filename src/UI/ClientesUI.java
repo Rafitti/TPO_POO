@@ -12,7 +12,6 @@ import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
 import javax.swing.*;
 import javax.swing.table.*;
 
@@ -85,7 +84,6 @@ public class ClientesUI {
     }
 
     tabla.setModel(model);
-    // asegurar suficiente alto de fila para botones y ajustar ancho columna acciones
     tabla.setRowHeight(32);
 
     // Ocultar columna Id  
@@ -97,9 +95,9 @@ public class ClientesUI {
     }
 
     int accionesCol = tabla.getColumnModel().getColumnCount() - 1;
-    TableColumn accionesColumn = tabla.getColumnModel().getColumn(accionesCol);
-    accionesColumn.setCellRenderer(new ActionCellRenderer());
-  accionesColumn.setCellEditor(new ClientActionCellEditor(new JCheckBox(), sc, sr, tabla));
+  TableColumn accionesColumn = tabla.getColumnModel().getColumn(accionesCol);
+  accionesColumn.setCellRenderer(new ActionCellRenderer());
+  accionesColumn.setCellEditor(new ActionCellEditor(new JCheckBox(), sc, sr, tabla));
     accionesColumn.setPreferredWidth(160);
     accionesColumn.setMaxWidth(260);
 
@@ -107,27 +105,28 @@ public class ClientesUI {
   }
 
   private void onAgregar(){
-    JTextField mailF = new JTextField();
-    JTextField nombreF = new JTextField();
-    JTextField apellidoF = new JTextField();
-    JTextField dniF = new JTextField();
-    JTextField telefonoF = new JTextField();
+    JTextField mailCliente = new JTextField();
+    JTextField nombreCliente = new JTextField();
+    JTextField apellidoCliente = new JTextField();
+    JTextField dniCliente = new JTextField();
+    JTextField telefonoCliente = new JTextField();
 
     JPanel p = new JPanel(new GridLayout(0,2));
-    p.add(new JLabel("Mail:")); p.add(mailF);
-    p.add(new JLabel("Nombre:")); p.add(nombreF);
-    p.add(new JLabel("Apellido:")); p.add(apellidoF);
-    p.add(new JLabel("DNI:")); p.add(dniF);
-    p.add(new JLabel("Telefono:")); p.add(telefonoF);
+    p.add(new JLabel("Mail:")); p.add(mailCliente);
+    p.add(new JLabel("Nombre:")); p.add(nombreCliente);
+    p.add(new JLabel("Apellido:")); p.add(apellidoCliente);
+    p.add(new JLabel("DNI:")); p.add(dniCliente);
+    p.add(new JLabel("Telefono:")); p.add(telefonoCliente);
 
     int opt = JOptionPane.showConfirmDialog(frame, p, "Agregar Cliente", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
     if(opt == JOptionPane.OK_OPTION){
       try{
-        String mail = mailF.getText();
-        String nombre = nombreF.getText();
-        String apellido = apellidoF.getText();
-        int dni = Integer.parseInt(dniF.getText());
-        Integer tel = telefonoF.getText().isBlank() ? null : Integer.parseInt(telefonoF.getText());
+        String mail = mailCliente.getText();
+        String nombre = nombreCliente.getText();
+        String apellido = apellidoCliente.getText();
+        int dni = Integer.parseInt(dniCliente.getText());
+        Integer tel = telefonoCliente.getText().isBlank() ? null : Integer.parseInt(telefonoCliente.getText());
+
         Cliente created = sc.create(mail, nombre, apellido, dni, tel);
         if(created != null){
           DefaultTableModel m = (DefaultTableModel) tabla.getModel();
@@ -163,7 +162,7 @@ public class ClientesUI {
     }
   }
 
-  private static class ClientActionCellEditor extends AbstractCellEditor implements TableCellEditor {
+  private static class ActionCellEditor extends AbstractCellEditor implements TableCellEditor {
     private JPanel panel;
     private JButton editBtn;
     private JButton delBtn;
@@ -171,10 +170,13 @@ public class ClientesUI {
     private SistemaClientes sc;
     private SistemaReservas sr;
     private int currentId;
-    private int editingRowViewIndex; // índice de la fila en vista mientras se edita
+    private int editingRowViewIndex;
 
-    public ClientActionCellEditor(JCheckBox chk, SistemaClientes sc, SistemaReservas sr, JTable table){
-      this.sc = sc; this.sr = sr; this.table = table;
+  public ActionCellEditor(JCheckBox chk, SistemaClientes sc, SistemaReservas sr, JTable table){
+      this.sc = sc; 
+      this.sr = sr; 
+      this.table = table;
+
       panel = new JPanel(new FlowLayout(FlowLayout.CENTER,6,4));
       panel.setOpaque(true);
       panel.setPreferredSize(new Dimension(150,28));
@@ -186,13 +188,22 @@ public class ClientesUI {
       delBtn.setFocusable(false);
       panel.add(editBtn); panel.add(delBtn);
 
-      editBtn.addActionListener(e -> onEdit());
-      delBtn.addActionListener(e -> onDelete());
+      editBtn.addActionListener(new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+          onEdit();
+        }
+      });
+      delBtn.addActionListener(new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+          onDelete();
+        }
+      });
     }
 
     @Override
     public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column){
-      // row es el índice de vista; convertir a modelo por seguridad
       editingRowViewIndex = row;
       int modelRow = table.convertRowIndexToModel(row);
       Object idObj = table.getModel().getValueAt(modelRow, 0);
@@ -214,35 +225,35 @@ public class ClientesUI {
       String dniStr = m.getValueAt(modelRow,4).toString();
       String telStr = m.getValueAt(modelRow,5) == null ? "" : m.getValueAt(modelRow,5).toString();
 
-      JTextField mailF = new JTextField(mail);
-      JTextField nombreF = new JTextField(nombre);
-      JTextField apellidoF = new JTextField(apellido);
-      JTextField dniF = new JTextField(dniStr);
-      JTextField telF = new JTextField(telStr);
+      JTextField mailCliente = new JTextField(mail);
+      JTextField nombreCliente = new JTextField(nombre);
+      JTextField apellidoCliente = new JTextField(apellido);
+      JTextField dniCliente = new JTextField(dniStr);
+      JTextField telCliente = new JTextField(telStr);
 
       JPanel p = new JPanel(new GridLayout(0,2));
-      p.add(new JLabel("Mail:")); p.add(mailF);
-      p.add(new JLabel("Nombre:")); p.add(nombreF);
-      p.add(new JLabel("Apellido:")); p.add(apellidoF);
-      p.add(new JLabel("DNI:")); p.add(dniF);
-      p.add(new JLabel("Telefono:")); p.add(telF);
+      p.add(new JLabel("Mail:")); p.add(mailCliente);
+      p.add(new JLabel("Nombre:")); p.add(nombreCliente);
+      p.add(new JLabel("Apellido:")); p.add(apellidoCliente);
+      p.add(new JLabel("DNI:")); p.add(dniCliente);
+      p.add(new JLabel("Telefono:")); p.add(telCliente);
 
       int opt = JOptionPane.showConfirmDialog(table, p, "Editar Cliente", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
       if(opt == JOptionPane.OK_OPTION){
         try{
           Map<String,Object> vals = new HashMap<>();
-          vals.put("Mail", mailF.getText());
-          vals.put("Nombre", nombreF.getText());
-          vals.put("Apellido", apellidoF.getText());
-          vals.put("DNI", Integer.parseInt(dniF.getText()));
-          vals.put("Telefono", telF.getText().isBlank() ? null : Integer.parseInt(telF.getText()));
+          vals.put("Mail", mailCliente.getText());
+          vals.put("Nombre", nombreCliente.getText());
+          vals.put("Apellido", apellidoCliente.getText());
+          vals.put("DNI", Integer.parseInt(dniCliente.getText()));
+          vals.put("Telefono", telCliente.getText().isBlank() ? null : Integer.parseInt(telCliente.getText()));
           boolean ok = sc.update(currentId, vals);
           if(ok){
-            m.setValueAt(mailF.getText(), modelRow, 1);
-            m.setValueAt(nombreF.getText(), modelRow, 2);
-            m.setValueAt(apellidoF.getText(), modelRow, 3);
-            m.setValueAt(Integer.parseInt(dniF.getText()), modelRow, 4);
-            m.setValueAt(telF.getText().isBlank() ? null : Integer.parseInt(telF.getText()), modelRow, 5);
+            m.setValueAt(mailCliente.getText(), modelRow, 1);
+            m.setValueAt(nombreCliente.getText(), modelRow, 2);
+            m.setValueAt(apellidoCliente.getText(), modelRow, 3);
+            m.setValueAt(Integer.parseInt(dniCliente.getText()), modelRow, 4);
+            m.setValueAt(telCliente.getText().isBlank() ? null : Integer.parseInt(telCliente.getText()), modelRow, 5);
           } else {
             JOptionPane.showMessageDialog(table, "Error al actualizar cliente", "Error", JOptionPane.ERROR_MESSAGE);
           }
@@ -267,7 +278,7 @@ public class ClientesUI {
       }
       // Validación: no permitir eliminar si el cliente tiene reservas
       try {
-        if (sr != null && sr.hasReservationsForClient(currentId)) {
+        if (sr != null && sr.clienteTieneReservas(currentId)) {
           JOptionPane.showMessageDialog(table, "No se puede eliminar: el cliente tiene reservas asociadas.", "Error", JOptionPane.ERROR_MESSAGE);
           fireEditingCanceled();
           return;

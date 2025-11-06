@@ -59,9 +59,7 @@ public class HabitacionesUI {
   public void init() {
     List<Habitacion> habitaciones = sh.getAll();
 
-    // Aquí se llenaría la tabla con los datos de las habitaciones
     DefaultTableModel model = new DefaultTableModel();
-    // Añadimos columna Id oculta para poder identificar la fila en la DB
     model.addColumn("Id");
     model.addColumn("Número");
     model.addColumn("Tipo");
@@ -84,15 +82,15 @@ public class HabitacionesUI {
     }
 
     int accionesCol = tablaHabitaciones.getColumnModel().getColumnCount() - 1;
-    tablaHabitaciones.getColumnModel().getColumn(accionesCol).setCellRenderer(new ButtonRenderer());
-    tablaHabitaciones.getColumnModel().getColumn(accionesCol).setCellEditor(new ButtonEditor(new JCheckBox(), sh, tablaHabitaciones));
+  tablaHabitaciones.getColumnModel().getColumn(accionesCol).setCellRenderer(new ActionCellRenderer());
+  tablaHabitaciones.getColumnModel().getColumn(accionesCol).setCellEditor(new ActionCellEditor(new JCheckBox(), sh, tablaHabitaciones));
     
     frame.setVisible(true);
   }
 
   // Renderer para mostrar el botón en la tabla
-  private static class ButtonRenderer extends JButton implements TableCellRenderer {
-    public ButtonRenderer() { setOpaque(true); }
+  private static class ActionCellRenderer extends JButton implements TableCellRenderer {
+    public ActionCellRenderer() { setOpaque(true); }
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
       if (value instanceof JButton) {
@@ -104,14 +102,14 @@ public class HabitacionesUI {
   }
 
   // Editor que maneja clicks en el botón y abre diálogo para editar FaltaLimpiar
-  private static class ButtonEditor extends AbstractCellEditor implements TableCellEditor, ActionListener {
+  private static class ActionCellEditor extends AbstractCellEditor implements TableCellEditor, ActionListener {
     private JButton button;
     private JTable table;
     private SistemaHabitaciones sh;
     private boolean currentValue;
     private int currentId;
 
-    public ButtonEditor(JCheckBox checkBox, SistemaHabitaciones sh, JTable table) {
+  public ActionCellEditor(JCheckBox checkBox, SistemaHabitaciones sh, JTable table) {
       this.button = new JButton("Editar");
       this.button.addActionListener(this);
       this.sh = sh;
@@ -125,7 +123,6 @@ public class HabitacionesUI {
 
     @Override
     public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-      // Obtener id y estado actual de la fila
       Object idObj = table.getModel().getValueAt(row, 0);
       Object faltaObj = table.getModel().getValueAt(row, 3);
       if (idObj instanceof Number) currentId = ((Number) idObj).intValue();
@@ -141,12 +138,11 @@ public class HabitacionesUI {
       int option = JOptionPane.showConfirmDialog(table, chk, "Editar FaltaLimpiar", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
       if (option == JOptionPane.OK_OPTION) {
         boolean newVal = chk.isSelected();
-        // Actualizar en DB
         Map<String,Object> values = new HashMap<>();
         values.put("FaltaLimpiar", newVal ? 1 : 0);
         boolean ok = sh.update(currentId, values);
         if (ok) {
-          // Actualizar modelo visual
+          // Actualizar tabla
           // la columna 3 es Falta Limpiar
           int editingRow = table.getSelectedRow();
           if (editingRow >= 0) table.getModel().setValueAt(newVal, editingRow, 3);

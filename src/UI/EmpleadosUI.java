@@ -97,9 +97,9 @@ public class EmpleadosUI {
     }
 
     int accionesCol = tabla.getColumnModel().getColumnCount() - 1;
-    TableColumn accionesColumn = tabla.getColumnModel().getColumn(accionesCol);
-    accionesColumn.setCellRenderer(new EmpActionRenderer());
-    accionesColumn.setCellEditor(new EmpActionEditor(new JCheckBox(), se, tabla));
+  TableColumn accionesColumn = tabla.getColumnModel().getColumn(accionesCol);
+  accionesColumn.setCellRenderer(new ActionCellRenderer());
+  accionesColumn.setCellEditor(new ActionCellEditor(new JCheckBox(), se, tabla));
     accionesColumn.setPreferredWidth(160);
     accionesColumn.setMaxWidth(260);
 
@@ -141,9 +141,9 @@ public class EmpleadosUI {
     }
   }
 
-  // Renderer that displays the two action buttons (disabled) for visual only
-  private static class EmpActionRenderer extends JPanel implements TableCellRenderer {
-    public EmpActionRenderer(){
+  // Celda de acciones que contiene botones Editar y Eliminar
+  private static class ActionCellRenderer extends JPanel implements TableCellRenderer {
+    public ActionCellRenderer(){
       setLayout(new FlowLayout(FlowLayout.CENTER,6,4));
       setOpaque(true);
       setPreferredSize(new Dimension(150,28));
@@ -164,7 +164,7 @@ public class EmpleadosUI {
   }
 
   // Editor that provides working buttons and handles edit/delete actions safely
-  private static class EmpActionEditor extends AbstractCellEditor implements TableCellEditor {
+  private static class ActionCellEditor extends AbstractCellEditor implements TableCellEditor {
     private JPanel panel;
     private JButton editBtn;
     private JButton delBtn;
@@ -173,7 +173,7 @@ public class EmpleadosUI {
     private int currentId;
     private int editingRowViewIndex; // índice de la fila en vista mientras se edita
 
-    public EmpActionEditor(JCheckBox chk, SistemaEmpleados se, JTable table){
+    public ActionCellEditor(JCheckBox chk, SistemaEmpleados se, JTable table){
       this.se = se; this.table = table;
       panel = new JPanel(new FlowLayout(FlowLayout.CENTER,6,4));
       panel.setOpaque(true);
@@ -186,13 +186,22 @@ public class EmpleadosUI {
       delBtn.setFocusable(false);
       panel.add(editBtn); panel.add(delBtn);
 
-      editBtn.addActionListener(e -> onEdit());
-      delBtn.addActionListener(e -> onDelete());
+      editBtn.addActionListener(new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+          onEdit();
+        }
+      });
+      delBtn.addActionListener(new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+          onDelete();
+        }
+      });
     }
 
     @Override
     public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column){
-      // row es el índice de vista; convertir a modelo por seguridad
       editingRowViewIndex = row;
       int modelRow = table.convertRowIndexToModel(row);
       Object idObj = table.getModel().getValueAt(modelRow, 0);

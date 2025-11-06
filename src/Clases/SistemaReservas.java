@@ -71,7 +71,6 @@ public class SistemaReservas {
   }
 
   public boolean update(int id, Map<String,Object> values){
-    // If caller provides LocalDateTime for FechaInicio/FechaFin, convert to formatted string
     if(values.containsKey("FechaInicio") && values.get("FechaInicio") instanceof java.time.LocalDateTime){
       values.put("FechaInicio", ((java.time.LocalDateTime)values.get("FechaInicio")).format(formatter));
     }
@@ -91,7 +90,6 @@ public class SistemaReservas {
       if(r.getIdHabitacion() != habitacionId) continue;
       LocalDateTime rStart = r.getFechaInicio();
       LocalDateTime rEnd = r.getFechaFin();
-      // overlap check: start < rEnd && rStart < end
       if(start.isBefore(rEnd) && rStart.isBefore(end)) return false;
     }
     return true;
@@ -102,7 +100,7 @@ public class SistemaReservas {
   }
 
   // Devuelve true si el cliente tiene al menos una reserva registrada
-  public boolean hasReservationsForClient(int clienteId){
+  public boolean clienteTieneReservas(int clienteId){
     List<Reserva> list = getByClienteId(clienteId);
     return list != null && !list.isEmpty();
   }
