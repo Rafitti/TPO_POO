@@ -5,8 +5,6 @@ public abstract class Usuario {
     protected String mail;
     protected String nombre;
     protected String apellido;
-    protected String password;
-
 
     public Usuario(int id,String mail, String nombre, String apellido) {
         this.id = id;

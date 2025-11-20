@@ -353,7 +353,7 @@ public class ReservasUI {
 
           boolean ok = sr.update(currentId, vals);
           if(ok){
-            m.setValueAt(String.valueOf(getHabitNumeroById(idHabit, habitaciones)), modelRow, 1);
+            m.setValueAt(String.valueOf(getHabitacionNumeroById(idHabit, habitaciones)), modelRow, 1);
             m.setValueAt(getClienteNameById(idCliente, clientes), modelRow, 2);
             m.setValueAt(fi.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")), modelRow, 3);
             m.setValueAt(ff.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")), modelRow, 4);
@@ -392,7 +392,7 @@ public class ReservasUI {
       return clientes.stream().filter(c->c.getId()==id).findFirst().map(c->c.getNombre()+" "+c.getApellido()).orElse("#"+id);
     }
 
-    private int getHabitNumeroById(int id, List<Habitacion> habitaciones){
+    private int getHabitacionNumeroById(int id, List<Habitacion> habitaciones){
       return habitaciones.stream().filter(h->h.getId()==id).findFirst().map(Habitacion::getNumero).orElse(-1);
     }
   }
