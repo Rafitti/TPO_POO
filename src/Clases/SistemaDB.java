@@ -1,5 +1,7 @@
 package Clases;
 
+import Clases.Exceptions.DatabaseException;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,7 +22,7 @@ public class SistemaDB {
     this.password = password;
   }
 
-  public void init() {
+  public void init() throws DatabaseException {
     try {
       conn = DriverManager.getConnection(url, user, password);
       Statement stmt = conn.createStatement();
@@ -105,11 +107,11 @@ public class SistemaDB {
     }
     catch(SQLException e)
     {
-      e.printStackTrace(System.err);
+      throw new DatabaseException("Error al inicializar la base de datos", "INIT", "ALL", e);
     }
   }
 
-  public List<Map<String,Object>> entityGetAll(String table){
+  public List<Map<String,Object>> entityGetAll(String table) throws DatabaseException {
     try{
       Statement stmt = conn.createStatement();
       ResultSet rs = stmt.executeQuery("SELECT * FROM " + table + ";");
@@ -129,16 +131,16 @@ public class SistemaDB {
       }
       return rows;
     }catch(SQLException e){
-      logger.info(e.getMessage());
-      return null;
+      throw new DatabaseException("Error al obtener todos los registros", "SELECT", table, e);
     }
   }
 
-  public List<Map<String,Object>> entityGetBy(String table, Map<String,Object> where){
+  public List<Map<String,Object>> entityGetBy(String table, Map<String,Object> where) throws DatabaseException {
     if(where == null || where.isEmpty()) return entityGetAll(table);
 
     StringBuilder sql = new StringBuilder("SELECT * FROM ").append(table).append(" WHERE ");
     List<Object> params = new ArrayList<>();
+    
     int i = 0;
     for(String col : where.keySet()){
       if(i++ > 0) sql.append(" AND ");
@@ -156,7 +158,9 @@ public class SistemaDB {
 
       List<Map<String,Object>> rows = new ArrayList<>();
       ResultSetMetaData md = rs.getMetaData();
+
       int cols = md.getColumnCount();
+
       while(rs.next()){
         Map<String,Object> row = new HashMap<>();
         for(int k=1;k<=cols;k++){
@@ -168,17 +172,17 @@ public class SistemaDB {
       }
       return rows;
     }catch(SQLException e){
-      logger.info(e.getMessage());
-      return null;
+      throw new DatabaseException("Error al obtener registros con filtro", "SELECT", table, e);
     }
   }
 
-  public Map<String,Object> entityCreate(String table, Map<String,Object> values){
+  public Map<String,Object> entityCreate(String table, Map<String,Object> values) throws DatabaseException {
     if(values == null || values.isEmpty()) return null;
 
     StringBuilder cols = new StringBuilder();
     StringBuilder holders = new StringBuilder();
     List<Object> params = new ArrayList<>();
+
     int i = 0;
     for(String col : values.keySet()){
       if(i++ > 0){ cols.append(", "); holders.append(", "); }
@@ -204,18 +208,19 @@ public class SistemaDB {
         List<Map<String,Object>> rows = entityGetBy(table, where);
         if(rows != null && !rows.isEmpty()) return rows.get(0);
       }
+
       return null;
     }catch(SQLException e){
-      logger.info(e.getMessage());
-      return null;
+      throw new DatabaseException("Error al crear registro", "INSERT", table, e);
     }
   }
 
-  public boolean entityUpdate(String table, int id, Map<String,Object> values){
+  public boolean entityUpdate(String table, int id, Map<String,Object> values) throws DatabaseException {
     if(values == null || values.isEmpty()) return false;
 
     StringBuilder set = new StringBuilder();
     List<Object> params = new ArrayList<>();
+
     int i = 0;
     for(String col : values.keySet()){
       if(i++ > 0) set.append(", ");
@@ -224,6 +229,7 @@ public class SistemaDB {
     }
 
     String sql = "UPDATE " + table + " SET " + set.toString() + " WHERE Id = ?;";
+
     try{
       PreparedStatement pstmt = conn.prepareStatement(sql);
       int idx = 1;
@@ -232,21 +238,22 @@ public class SistemaDB {
       int affected = pstmt.executeUpdate();
       return affected > 0;
     }catch(SQLException e){
-      logger.info(e.getMessage());
-      return false;
+      throw new DatabaseException("Error al actualizar registro", "UPDATE", table, e);
     }
   }
 
-  public boolean entityDelete(String table, int id){
+  public boolean entityDelete(String table, int id) throws DatabaseException {
     String sql = "DELETE FROM " + table + " WHERE Id = ?;";
+
     try{
       PreparedStatement pstmt = conn.prepareStatement(sql);
       pstmt.setInt(1, id);
+
       int affected = pstmt.executeUpdate();
+
       return affected > 0;
     }catch(SQLException e){
-      logger.info(e.getMessage());
-      return false;
+      throw new DatabaseException("Error al eliminar registro", "DELETE", table, e);
     }
   }
 }
