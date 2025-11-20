@@ -10,7 +10,6 @@ public class Hotel {
   private SistemaHabitaciones sistemaHabitaciones;
   private SistemaClientes sistemaClientes;
   private SistemaEmpleados sistemaEmpleados;
-  private SistemaBuffet sistemaBuffet;
   private Logger logger = Logger.getLogger(getClass().getName());
 
   public Hotel(){
@@ -23,8 +22,7 @@ public class Hotel {
           sistemaEmpleados = new SistemaEmpleados(sistemaDB);
           sistemaHabitaciones = new SistemaHabitaciones(sistemaDB);
           sistemaClientes = new SistemaClientes(sistemaDB);
-          sistemaBuffet = new SistemaBuffet(sistemaDB);
-          sistemaLogin = new SistemaLogin(sistemaEmpleados, sistemaReservas, sistemaHabitaciones, sistemaClientes, sistemaBuffet);
+          sistemaLogin = new SistemaLogin(sistemaEmpleados, sistemaReservas, sistemaHabitaciones, sistemaClientes);
           
     } catch (Exception e) {
           System.out.println("Error al inicializar el sistema: " + e.getMessage());

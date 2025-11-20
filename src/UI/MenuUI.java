@@ -14,7 +14,6 @@ public class MenuUI implements ActionListener {
     private JButton botonHabitaciones;
     private JButton botonClientes;
     private JButton botonEmpleados;
-    private JButton botonBuffet;
     private JButton botonCerrarSesion;
 
     private SistemaLogin sl;
@@ -22,15 +21,13 @@ public class MenuUI implements ActionListener {
     private SistemaHabitaciones sh;
     private SistemaClientes sc;
     private SistemaEmpleados se;
-    private SistemaBuffet sb;
 
-    public MenuUI(SistemaLogin sl, SistemaReservas sr, SistemaHabitaciones sh, SistemaClientes sc, SistemaEmpleados se, SistemaBuffet sb) {
+    public MenuUI(SistemaLogin sl, SistemaReservas sr, SistemaHabitaciones sh, SistemaClientes sc, SistemaEmpleados se) {
         this.sl = sl;
         this.sr = sr;
         this.sh = sh;
         this.sc = sc;
         this.se = se;
-        this.sb = sb;
 
         frame = new JFrame("Menú Principal");
         frame.setSize(500, 500);
@@ -69,22 +66,15 @@ public class MenuUI implements ActionListener {
             fondo.add(botonHabitaciones);
         }
 
-        if(rol == Rol.COCINERO || rol == Rol.ADMINISTRADOR){  
-            botonBuffet = new JButton("Gestión de Buffet");
-            botonBuffet.setBounds(150, 260, 200, 40);
-            botonBuffet.addActionListener(this);
-            fondo.add(botonBuffet);
-        }
-
         if(rol == Rol.ADMINISTRADOR){
             botonEmpleados = new JButton("Gestión de Empleados");
-            botonEmpleados.setBounds(150, 320, 200, 40);
+            botonEmpleados.setBounds(150, 260, 200, 40);
             botonEmpleados.addActionListener(this);
             fondo.add(botonEmpleados);
         }
 
         botonCerrarSesion = new JButton("Cerrar Sesión");
-        botonCerrarSesion.setBounds(150, 380, 200, 40);
+        botonCerrarSesion.setBounds(150, 320, 200, 40);
         botonCerrarSesion.addActionListener(this);
         fondo.add(botonCerrarSesion);
     }
@@ -106,9 +96,6 @@ public class MenuUI implements ActionListener {
             frame.setVisible(false);
         } else if (e.getSource() == botonEmpleados) {
             new EmpleadosUI(se, this).init();
-            frame.setVisible(false);
-        } else if (e.getSource() == botonBuffet) {
-            new BuffetUI(sb).init();
             frame.setVisible(false);
         } else if (e.getSource() == botonCerrarSesion) {
             frame.dispose();

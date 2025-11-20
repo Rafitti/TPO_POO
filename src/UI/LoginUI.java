@@ -20,15 +20,13 @@ public class LoginUI implements ActionListener {
     private SistemaHabitaciones sa;
     private SistemaClientes sc;
     private SistemaEmpleados se;
-    private SistemaBuffet sb;
 
-    public LoginUI(SistemaLogin sl,SistemaReservas sr, SistemaHabitaciones sa, SistemaClientes sc, SistemaEmpleados se, SistemaBuffet sb) {
+    public LoginUI(SistemaLogin sl,SistemaReservas sr, SistemaHabitaciones sa, SistemaClientes sc, SistemaEmpleados se) {
         this.sl = sl;
         this.sr = sr;
         this.sa = sa;
         this.sc = sc;
         this.se = se;
-        this.sb = sb;
 
         frame = new JFrame("Login");
         frame.setSize(500, 500);
@@ -97,7 +95,7 @@ public class LoginUI implements ActionListener {
                     sl.setSessionUser(empleado);
                     frame.dispose();
 
-                    new MenuUI(sl,sr,sa,sc,se,sb).init();
+                    new MenuUI(sl,sr,sa,sc,se).init();
                     return;
                 }
 
