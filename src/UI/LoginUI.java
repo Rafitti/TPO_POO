@@ -1,6 +1,8 @@
 package UI;
 
-import Clases.*;
+import Clases.Entidades.*;
+import Clases.Interfaces.*;
+import Clases.Exceptions.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,18 +17,12 @@ public class LoginUI implements ActionListener {
     private JLabel passwordLabel;
     private JPasswordField passwordUsuario;
     private JButton aceptarButton;
-    private SistemaLogin sl;
-    private SistemaReservas sr;
-    private SistemaHabitaciones sa;
-    private SistemaClientes sc;
-    private SistemaEmpleados se;
+    private IEmpleadoService empleadoService;
+    private INavigationService navigation;
 
-    public LoginUI(SistemaLogin sl,SistemaReservas sr, SistemaHabitaciones sa, SistemaClientes sc, SistemaEmpleados se) {
-        this.sl = sl;
-        this.sr = sr;
-        this.sa = sa;
-        this.sc = sc;
-        this.se = se;
+    public LoginUI(IEmpleadoService empleadoService, INavigationService navigation) {
+        this.empleadoService = empleadoService;
+        this.navigation = navigation;
 
         frame = new JFrame("Login");
         frame.setSize(500, 500);
@@ -75,34 +71,22 @@ public class LoginUI implements ActionListener {
         if(e.getSource() == aceptarButton){
             try{
                 String mail = mailUsuario.getText();
-                
-                if(mail.isEmpty()){
-                    JOptionPane.showMessageDialog(fondo,"Debe ingresar un email.");
-                    return;
-                }
-
                 String password = new String(passwordUsuario.getPassword());
-
-                if(password.isEmpty()){
-                    JOptionPane.showMessageDialog(fondo,"Debe ingresar una contraseña.");
-                    return;
-                }
                 
-                Empleado empleado = se.getByMailAndPassword(mail, password);
+                Empleado empleado = empleadoService.autenticar(mail, password);
                 
-                if(empleado != null){
-                    JOptionPane.showMessageDialog(fondo, "Login exitoso");
-                    sl.setSessionUser(empleado);
-                    frame.dispose();
-
-                    new MenuUI(sl,sr,sa,sc,se).init();
-                    return;
-                }
-
-                JOptionPane.showMessageDialog(fondo, "Login fallido. Email o contraseña incorrectos.");
-                return;
+                JOptionPane.showMessageDialog(fondo, "Login exitoso");
+                frame.dispose();
+                navigation.mostrarMenuPrincipal(empleado);
+                
+            } catch (ValidationException vex) {
+                JOptionPane.showMessageDialog(fondo, vex.getMessage(), "Datos inválidos", JOptionPane.WARNING_MESSAGE);
+            } catch (DatabaseException dex) {
+                JOptionPane.showMessageDialog(fondo, 
+                    "Error de base de datos:\n" + dex.getMessage(), 
+                    "Error", JOptionPane.ERROR_MESSAGE);
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(fondo, "Error al procesar el login: " + ex.getMessage());
+                JOptionPane.showMessageDialog(fondo, "Error inesperado: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }

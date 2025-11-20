@@ -1,6 +1,7 @@
 package UI;
 
-import Clases.*;
+import Clases.Entidades.*;
+import Clases.Interfaces.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,18 +17,27 @@ public class MenuUI implements ActionListener {
     private JButton botonEmpleados;
     private JButton botonCerrarSesion;
 
-    private SistemaLogin sl;
-    private SistemaReservas sr;
-    private SistemaHabitaciones sh;
-    private SistemaClientes sc;
-    private SistemaEmpleados se;
+    private IClienteService clienteService;
+    private IEmpleadoService empleadoService;
+    private IHabitacionService habitacionService;
+    private IReservaService reservaService;
+    private INavigationService navigation;
+    private Empleado empleadoLogueado;
 
-    public MenuUI(SistemaLogin sl, SistemaReservas sr, SistemaHabitaciones sh, SistemaClientes sc, SistemaEmpleados se) {
-        this.sl = sl;
-        this.sr = sr;
-        this.sh = sh;
-        this.sc = sc;
-        this.se = se;
+    public MenuUI(
+        IClienteService clienteService, 
+        IEmpleadoService empleadoService,
+        IHabitacionService habitacionService, 
+        IReservaService reservaService,
+        INavigationService navigation,
+        Empleado empleadoLogueado
+    ) {
+        this.clienteService = clienteService;
+        this.empleadoService = empleadoService;
+        this.habitacionService = habitacionService;
+        this.reservaService = reservaService;
+        this.navigation = navigation;
+        this.empleadoLogueado = empleadoLogueado;
 
         frame = new JFrame("Menú Principal");
         frame.setSize(500, 500);
@@ -45,7 +55,7 @@ public class MenuUI implements ActionListener {
         titulo.setBounds(200, 30, 150, 30);
         fondo.add(titulo);
 
-        Rol rol = sl.getSessionRole();
+        Rol rol = empleadoLogueado.getRol();
 
         if(rol == Rol.RECEPCIONISTA || rol == Rol.ADMINISTRADOR){
             botonReservas = new JButton("Gestión de Reservas");
@@ -86,20 +96,20 @@ public class MenuUI implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == botonReservas) {
-            new ReservasUI(sr, sc, sh, this).init();
+            new ReservasUI(reservaService, clienteService, habitacionService, this).init();
             frame.setVisible(false);
         } else if (e.getSource() == botonHabitaciones) {
-            new HabitacionesUI(sh, this).init();
+            new HabitacionesUI(habitacionService, this).init();
             frame.setVisible(false);
         } else if (e.getSource() == botonClientes) {
-            new ClientesUI(sc, sr, this).init();
+            new ClientesUI(clienteService, this).init();
             frame.setVisible(false);
         } else if (e.getSource() == botonEmpleados) {
-            new EmpleadosUI(se, this).init();
+            new EmpleadosUI(empleadoService, this).init();
             frame.setVisible(false);
         } else if (e.getSource() == botonCerrarSesion) {
             frame.dispose();
-            sl.init();
+            navigation.cerrarSesion();
         }
     }
 }

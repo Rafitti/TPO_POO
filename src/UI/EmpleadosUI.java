@@ -1,15 +1,11 @@
 package UI;
 
-import Clases.*;
+import Clases.Entidades.*;
+import Clases.Interfaces.IEmpleadoService;
+import Clases.Exceptions.*;
 
 import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
-import java.awt.Insets;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -17,7 +13,7 @@ import javax.swing.*;
 import javax.swing.table.*;
 
 public class EmpleadosUI {
-  private final SistemaEmpleados se;
+  private final IEmpleadoService empleadoService;
   private JFrame frame;
   private JPanel fondo;
   private JLabel titulo;
@@ -25,8 +21,8 @@ public class EmpleadosUI {
   private JButton agregarButton;
   private JTable tabla;
 
-  public EmpleadosUI(SistemaEmpleados se, MenuUI menu){
-    this.se = se;
+  public EmpleadosUI(IEmpleadoService empleadoService, MenuUI menu){
+    this.empleadoService = empleadoService;
     this.frame = new JFrame("Gestión de Empleados");
     this.frame.setSize(800, 500);
     this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -71,39 +67,49 @@ public class EmpleadosUI {
   }
 
   public void init(){
-    List<Empleado> empleados = se.getAll();
-    DefaultTableModel model = new DefaultTableModel();
-    model.addColumn("Id");
-    model.addColumn("Mail");
-    model.addColumn("Nombre");
-    model.addColumn("Apellido");
-    model.addColumn("Password");
-    model.addColumn("Rol");
-    model.addColumn("Acciones");
+    try {
+      List<Empleado> empleados = empleadoService.obtenerTodos();
+      DefaultTableModel model = new DefaultTableModel();
+      model.addColumn("Id");
+      model.addColumn("Mail");
+      model.addColumn("Nombre");
+      model.addColumn("Apellido");
+      model.addColumn("Password");
+      model.addColumn("Rol");
+      model.addColumn("Acciones");
 
-    for(Empleado e : empleados){
-      model.addRow(new Object[]{e.getId(), e.getMail(), e.getNombre(), e.getApellido(), e.getPassword(), e.getRol(), "Acciones"});
+      for(Empleado e : empleados){
+        model.addRow(new Object[]{e.getId(), e.getMail(), e.getNombre(), e.getApellido(), e.getPassword(), e.getRol(), "Acciones"});
+      }
+
+      tabla.setModel(model);
+      tabla.setRowHeight(32);
+
+      // Ocultar columna Id
+      if (tabla.getColumnModel().getColumnCount() > 0) {
+        tabla.getColumnModel().getColumn(0).setMinWidth(0);
+        tabla.getColumnModel().getColumn(0).setMaxWidth(0);
+        tabla.getColumnModel().getColumn(0).setWidth(0);
+        tabla.getColumnModel().getColumn(0).setPreferredWidth(0);
+      }
+
+      int accionesCol = tabla.getColumnModel().getColumnCount() - 1;
+    TableColumn accionesColumn = tabla.getColumnModel().getColumn(accionesCol);
+    accionesColumn.setCellRenderer(new ActionCellRenderer());
+    accionesColumn.setCellEditor(new ActionCellEditor(new JCheckBox(), empleadoService, tabla));
+      accionesColumn.setPreferredWidth(160);
+      accionesColumn.setMaxWidth(260);
+
+      frame.setVisible(true);
+    } catch (DatabaseException e) {
+        JOptionPane.showMessageDialog(frame, 
+            "Error al cargar empleados desde la base de datos:\n" +
+            "Operación: " + e.getOperation() + "\n" +
+            "Tabla: " + e.getTable() + "\n" +
+            "Mensaje: " + e.getMessage(),
+            "Error de Base de Datos",
+            JOptionPane.ERROR_MESSAGE);
     }
-
-    tabla.setModel(model);
-    tabla.setRowHeight(32);
-
-    // Ocultar columna Id
-    if (tabla.getColumnModel().getColumnCount() > 0) {
-      tabla.getColumnModel().getColumn(0).setMinWidth(0);
-      tabla.getColumnModel().getColumn(0).setMaxWidth(0);
-      tabla.getColumnModel().getColumn(0).setWidth(0);
-      tabla.getColumnModel().getColumn(0).setPreferredWidth(0);
-    }
-
-    int accionesCol = tabla.getColumnModel().getColumnCount() - 1;
-  TableColumn accionesColumn = tabla.getColumnModel().getColumn(accionesCol);
-  accionesColumn.setCellRenderer(new ActionCellRenderer());
-  accionesColumn.setCellEditor(new ActionCellEditor(new JCheckBox(), se, tabla));
-    accionesColumn.setPreferredWidth(160);
-    accionesColumn.setMaxWidth(260);
-
-    frame.setVisible(true);
   }
 
   private void onAgregar(){
@@ -120,23 +126,32 @@ public class EmpleadosUI {
     p.add(new JLabel("Password:")); p.add(passwordF);
     p.add(new JLabel("Rol:")); p.add(rolBox);
 
-    int opt = JOptionPane.showConfirmDialog(frame, p, "Agregar Empleado", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-    if(opt == JOptionPane.OK_OPTION){
+    boolean exitoso = false;
+    while (!exitoso) {
+      int opt = JOptionPane.showConfirmDialog(frame, p, "Agregar Empleado", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+      if(opt != JOptionPane.OK_OPTION) {
+        break; // Usuario canceló
+      }
+      
       try{
         String mail = mailF.getText();
         String nombre = nombreF.getText();
         String apellido = apellidoF.getText();
         String pwd = passwordF.getText();
         Rol rol = (Rol) rolBox.getSelectedItem();
-        Empleado created = se.create(mail, nombre, apellido, pwd, rol);
-        if(created != null){
-          DefaultTableModel m = (DefaultTableModel) tabla.getModel();
-          m.addRow(new Object[]{created.getId(), created.getMail(), created.getNombre(), created.getApellido(), created.getPassword(), created.getRol(), "Acciones"});
-        } else {
-          JOptionPane.showMessageDialog(frame, "Error al crear empleado", "Error", JOptionPane.ERROR_MESSAGE);
-        }
-      }catch(Exception ex){
-        JOptionPane.showMessageDialog(frame, "Datos inválidos: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        Empleado created = empleadoService.crear(mail, nombre, apellido, pwd, rol);
+        DefaultTableModel m = (DefaultTableModel) tabla.getModel();
+        m.addRow(new Object[]{created.getId(), created.getMail(), created.getNombre(), created.getApellido(), created.getPassword(), created.getRol(), "Acciones"});
+        exitoso = true; // Éxito, salir del bucle
+      } catch(ValidationException ex){
+        JOptionPane.showMessageDialog(frame, "Error de validación: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        // El diálogo se volverá a mostrar
+      } catch(DatabaseException ex){
+        JOptionPane.showMessageDialog(frame, "Error de base de datos: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        exitoso = true; // Error de BD
+      } catch(Exception ex){
+        JOptionPane.showMessageDialog(frame, "Error inesperado: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        exitoso = true; // Error inesperado, salir
       }
     }
   }
@@ -163,18 +178,17 @@ public class EmpleadosUI {
     }
   }
 
-  // Editor that provides working buttons and handles edit/delete actions safely
   private static class ActionCellEditor extends AbstractCellEditor implements TableCellEditor {
     private JPanel panel;
     private JButton editBtn;
     private JButton delBtn;
     private JTable table;
-    private SistemaEmpleados se;
+    private IEmpleadoService empleadoService;
     private int currentId;
     private int editingRowViewIndex; // índice de la fila en vista mientras se edita
 
-    public ActionCellEditor(JCheckBox chk, SistemaEmpleados se, JTable table){
-      this.se = se; this.table = table;
+    public ActionCellEditor(JCheckBox chk, IEmpleadoService empleadoService, JTable table){
+      this.empleadoService = empleadoService; this.table = table;
       panel = new JPanel(new FlowLayout(FlowLayout.CENTER,6,4));
       panel.setOpaque(true);
       panel.setPreferredSize(new Dimension(150,28));
@@ -237,27 +251,35 @@ public class EmpleadosUI {
       p.add(new JLabel("Password:")); p.add(pwdF);
       p.add(new JLabel("Rol:")); p.add(rolBox);
 
-      int opt = JOptionPane.showConfirmDialog(table, p, "Editar Empleado", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-      if(opt == JOptionPane.OK_OPTION){
+      boolean exitoso = false;
+      while (!exitoso) {
+        int opt = JOptionPane.showConfirmDialog(table, p, "Editar Empleado", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        if(opt != JOptionPane.OK_OPTION){
+          exitoso = true;
+          break;
+        }
         try{
-          Map<String,Object> vals = new HashMap<>();
-          vals.put("Mail", mailF.getText());
-          vals.put("Nombre", nombreF.getText());
-          vals.put("Apellido", apellidoF.getText());
-          vals.put("Password", pwdF.getText());
-          vals.put("Rol", ((Rol)rolBox.getSelectedItem()).ordinal());
-          boolean ok = se.update(currentId, vals);
-          if(ok){
-            m.setValueAt(mailF.getText(), modelRow, 1);
-            m.setValueAt(nombreF.getText(), modelRow, 2);
-            m.setValueAt(apellidoF.getText(), modelRow, 3);
-            m.setValueAt(pwdF.getText(), modelRow, 4);
-            m.setValueAt(rolBox.getSelectedItem(), modelRow, 5);
-          } else {
-            JOptionPane.showMessageDialog(table, "Error al actualizar empleado", "Error", JOptionPane.ERROR_MESSAGE);
-          }
+          String mailNuevo = mailF.getText();
+          String nombreNuevo = nombreF.getText();
+          String apellidoNuevo = apellidoF.getText();
+          String pwdNuevo = pwdF.getText();
+          Rol rolNuevo = (Rol) rolBox.getSelectedItem();
+          
+          empleadoService.actualizar(currentId, mailNuevo, nombreNuevo, apellidoNuevo, pwdNuevo, rolNuevo);
+          m.setValueAt(mailNuevo, modelRow, 1);
+          m.setValueAt(nombreNuevo, modelRow, 2);
+          m.setValueAt(apellidoNuevo, modelRow, 3);
+          m.setValueAt(pwdNuevo, modelRow, 4);
+          m.setValueAt(rolNuevo, modelRow, 5);
+          exitoso = true;
+        }catch(ValidationException ex){
+          JOptionPane.showMessageDialog(table, "Error de validación: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }catch(DatabaseException ex){
+          JOptionPane.showMessageDialog(table, "Error de base de datos: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+          exitoso = true;
         }catch(Exception ex){
           JOptionPane.showMessageDialog(table, "Datos inválidos: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+          exitoso = true;
         }
       }
       fireEditingStopped();
@@ -277,14 +299,16 @@ public class EmpleadosUI {
       }
 
       try {
-        boolean ok = se.delete(currentId);
-        if (!ok) {
-          JOptionPane.showMessageDialog(table, "Error al eliminar empleado", "Error", JOptionPane.ERROR_MESSAGE);
-          fireEditingCanceled();
-          return;
-        }
+        empleadoService.eliminar(currentId);
+      } catch (ValidationException ex) {
+        JOptionPane.showMessageDialog(table, "Error de validación: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        fireEditingCanceled();
+        return;
+      } catch (DatabaseException ex) {
+        JOptionPane.showMessageDialog(table, "Error de base de datos: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        fireEditingCanceled();
+        return;
       } catch (Exception ex) {
-        ex.printStackTrace();
         JOptionPane.showMessageDialog(table, "Error al eliminar empleado: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         fireEditingCanceled();
         return;

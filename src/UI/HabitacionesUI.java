@@ -1,6 +1,8 @@
 package UI;
 
-import Clases.*;
+import Clases.Entidades.*;
+import Clases.Interfaces.IHabitacionService;
+import Clases.Exceptions.DatabaseException;
 
 import java.util.*;
 import java.awt.Component;
@@ -11,7 +13,7 @@ import javax.swing.table.*;
 
 
 public class HabitacionesUI {
-  private SistemaHabitaciones sh;
+  private IHabitacionService habitacionService;
   private JFrame frame;
   private JPanel fondo;
   private JLabel titulo;
@@ -19,8 +21,8 @@ public class HabitacionesUI {
   private JTable tablaHabitaciones;
 
 
-  public HabitacionesUI(SistemaHabitaciones sh,MenuUI menu) {
-    this.sh = sh;
+  public HabitacionesUI(IHabitacionService habitacionService, MenuUI menu) {
+    this.habitacionService = habitacionService;
     this.frame = new JFrame("Gestión de Habitaciones");
     this.frame.setSize(500, 500);
     this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -57,35 +59,45 @@ public class HabitacionesUI {
   }
 
   public void init() {
-    List<Habitacion> habitaciones = sh.getAll();
+    try {
+      List<Habitacion> habitaciones = habitacionService.obtenerTodas();
 
-    DefaultTableModel model = new DefaultTableModel();
-    model.addColumn("Id");
-    model.addColumn("Número");
-    model.addColumn("Tipo");
-    model.addColumn("Falta Limpiar");
-    model.addColumn("Acciones");
+      DefaultTableModel model = new DefaultTableModel();
+      model.addColumn("Id");
+      model.addColumn("Número");
+      model.addColumn("Tipo");
+      model.addColumn("Falta Limpiar");
+      model.addColumn("Acciones");
 
-    for (Habitacion hab : habitaciones) {
-      JButton btn = new JButton("Editar");
-      model.addRow(new Object[]{hab.getId(), hab.getNumero(), hab.getTipo(), hab.isFaltaLimpiar(), btn});
+      for (Habitacion hab : habitaciones) {
+        JButton btn = new JButton("Editar");
+        model.addRow(new Object[]{hab.getId(), hab.getNumero(), hab.getTipo(), hab.isFaltaLimpiar(), btn});
+      }
+
+      tablaHabitaciones.setModel(model);  
+
+      // Ocultar columna Id 
+      if (tablaHabitaciones.getColumnModel().getColumnCount() > 0) {
+        tablaHabitaciones.getColumnModel().getColumn(0).setMinWidth(0);
+        tablaHabitaciones.getColumnModel().getColumn(0).setMaxWidth(0);
+        tablaHabitaciones.getColumnModel().getColumn(0).setWidth(0);
+        tablaHabitaciones.getColumnModel().getColumn(0).setPreferredWidth(0);
+      }
+
+      int accionesCol = tablaHabitaciones.getColumnModel().getColumnCount() - 1;
+    tablaHabitaciones.getColumnModel().getColumn(accionesCol).setCellRenderer(new ActionCellRenderer());
+    tablaHabitaciones.getColumnModel().getColumn(accionesCol).setCellEditor(new ActionCellEditor(new JCheckBox(), habitacionService, tablaHabitaciones));
+      
+      frame.setVisible(true);
+    } catch (DatabaseException e) {
+        JOptionPane.showMessageDialog(frame, 
+            "Error al cargar habitaciones desde la base de datos:\n" +
+            "Operación: " + e.getOperation() + "\n" +
+            "Tabla: " + e.getTable() + "\n" +
+            "Mensaje: " + e.getMessage(),
+            "Error de Base de Datos",
+            JOptionPane.ERROR_MESSAGE);
     }
-
-    tablaHabitaciones.setModel(model);  
-
-    // Ocultar columna Id 
-    if (tablaHabitaciones.getColumnModel().getColumnCount() > 0) {
-      tablaHabitaciones.getColumnModel().getColumn(0).setMinWidth(0);
-      tablaHabitaciones.getColumnModel().getColumn(0).setMaxWidth(0);
-      tablaHabitaciones.getColumnModel().getColumn(0).setWidth(0);
-      tablaHabitaciones.getColumnModel().getColumn(0).setPreferredWidth(0);
-    }
-
-    int accionesCol = tablaHabitaciones.getColumnModel().getColumnCount() - 1;
-  tablaHabitaciones.getColumnModel().getColumn(accionesCol).setCellRenderer(new ActionCellRenderer());
-  tablaHabitaciones.getColumnModel().getColumn(accionesCol).setCellEditor(new ActionCellEditor(new JCheckBox(), sh, tablaHabitaciones));
-    
-    frame.setVisible(true);
   }
 
   // Renderer para mostrar el botón en la tabla
@@ -105,14 +117,14 @@ public class HabitacionesUI {
   private static class ActionCellEditor extends AbstractCellEditor implements TableCellEditor, ActionListener {
     private JButton button;
     private JTable table;
-    private SistemaHabitaciones sh;
+    private IHabitacionService habitacionService;
     private boolean currentValue;
     private int currentId;
 
-  public ActionCellEditor(JCheckBox checkBox, SistemaHabitaciones sh, JTable table) {
+  public ActionCellEditor(JCheckBox checkBox, IHabitacionService habitacionService, JTable table) {
       this.button = new JButton("Editar");
       this.button.addActionListener(this);
-      this.sh = sh;
+      this.habitacionService = habitacionService;
       this.table = table;
     }
 
@@ -133,21 +145,31 @@ public class HabitacionesUI {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-      // Abrir diálogo para cambiar estado
       JCheckBox chk = new JCheckBox("Falta Limpiar", currentValue);
-      int option = JOptionPane.showConfirmDialog(table, chk, "Editar FaltaLimpiar", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-      if (option == JOptionPane.OK_OPTION) {
+      
+      boolean exitoso = false;
+      while (!exitoso) {
+        int option = JOptionPane.showConfirmDialog(table, chk, "Editar FaltaLimpiar", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        if (option != JOptionPane.OK_OPTION) {
+          break; // Usuario canceló
+        }
+        
         boolean newVal = chk.isSelected();
-        Map<String,Object> values = new HashMap<>();
-        values.put("FaltaLimpiar", newVal ? 1 : 0);
-        boolean ok = sh.update(currentId, values);
-        if (ok) {
-          // Actualizar tabla
+        try {
+          habitacionService.actualizarEstadoLimpieza(currentId, newVal);
           // la columna 3 es Falta Limpiar
           int editingRow = table.getSelectedRow();
           if (editingRow >= 0) table.getModel().setValueAt(newVal, editingRow, 3);
-        } else {
-          JOptionPane.showMessageDialog(table, "Error al actualizar en la base de datos", "Error", JOptionPane.ERROR_MESSAGE);
+          exitoso = true; // Éxito, salir del bucle
+        } catch (DatabaseException ex) {
+          JOptionPane.showMessageDialog(table, 
+              "Error de base de datos al actualizar:\n" +
+              "Operación: " + ex.getOperation() + "\n" +
+              "Tabla: " + ex.getTable() + "\n" +
+              "Mensaje: " + ex.getMessage(),
+              "Error de Base de Datos",
+              JOptionPane.ERROR_MESSAGE);
+          exitoso = true; // Error de BD
         }
       }
       fireEditingStopped();

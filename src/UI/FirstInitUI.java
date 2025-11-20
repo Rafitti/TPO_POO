@@ -1,6 +1,8 @@
 package UI;
 
-import Clases.*;
+import Clases.Entidades.*;
+import Clases.Interfaces.*;
+import Clases.Exceptions.*;
 
 import javax.swing.*;
 import java.awt.Color;
@@ -21,13 +23,13 @@ public class FirstInitUI implements ActionListener {
     private JLabel passwordLabel;
     private JPasswordField passwordAdmin;
     private JButton ingresarButton;
-    private SistemaEmpleados se;
-    private SistemaLogin sistemaLogin;
+    private IEmpleadoService empleadoService;
+    private INavigationService navigation;
     private Logger logger = Logger.getLogger(getClass().getName());
 
-    public FirstInitUI(SistemaEmpleados sistemaEmpleados, SistemaLogin sistemaLogin) {
-        this.se = sistemaEmpleados;
-        this.sistemaLogin = sistemaLogin;
+    public FirstInitUI(IEmpleadoService empleadoService, INavigationService navigation) {
+        this.empleadoService = empleadoService;
+        this.navigation = navigation;
 
         frame = new JFrame("Registrar Administrador");
         frame.setSize(400,300);
@@ -127,20 +129,23 @@ public class FirstInitUI implements ActionListener {
                     return;
                 }
 
-                Empleado admin = se.create(mail, nombre, apellido, password, Rol.ADMINISTRADOR);
-                if(admin == null){
-                    JOptionPane.showMessageDialog(fondo,"Error al crear el administrador.");
-                    return;
-                }
+                Empleado admin = empleadoService.crear(mail, nombre, apellido, password, Rol.ADMINISTRADOR);
                 JOptionPane.showMessageDialog(fondo,"Administrador creado exitosamente.");
                 logger.info("Administrador creado: " + admin.getNombre() + " " + admin.getApellido());
 
                 frame.dispose();
+                navigation.mostrarLogin();
 
-                sistemaLogin.init();
-
+            } catch (ValidationException vex) {
+                JOptionPane.showMessageDialog(fondo, vex.getMessage(), "Datos inválidos", JOptionPane.WARNING_MESSAGE);
+            } catch (DatabaseException dex) {
+                JOptionPane.showMessageDialog(fondo, 
+                    "Error de base de datos:\n" + dex.getMessage(), 
+                    "Error", JOptionPane.ERROR_MESSAGE);
             } catch (Exception ex) {
-                throw new RuntimeException(ex);
+                JOptionPane.showMessageDialog(fondo, 
+                    "Error inesperado: " + ex.getMessage(), 
+                    "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }

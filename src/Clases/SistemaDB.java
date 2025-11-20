@@ -3,10 +3,7 @@ package Clases;
 import Clases.Exceptions.DatabaseException;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Logger;
 
 public class SistemaDB {
@@ -140,7 +137,7 @@ public class SistemaDB {
 
     StringBuilder sql = new StringBuilder("SELECT * FROM ").append(table).append(" WHERE ");
     List<Object> params = new ArrayList<>();
-    
+
     int i = 0;
     for(String col : where.keySet()){
       if(i++ > 0) sql.append(" AND ");
